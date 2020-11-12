@@ -1,0 +1,25 @@
+{
+  "author": "SunYufei",
+  "bugs": {
+    "url": "https://github.com/SunYufei/gdrive-webdav-cfworkers/issues"
+  },
+  "description": "WebDAV supports for Google Drive using Cloudflare Workers",
+  "devDependencies": {
+    "typescript": "^4.0.5",
+    "webpack": "^5.3.2",
+    "ts-loader": "^8.0.7",
+    "@cloudflare/workers-types": "^2.1.0"
+  },
+  "homepage": "https://github.com/SunYufei/gdrive-webdav-cfworkers#readme",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "gdrive-webdav-cfworkers",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SunYufei/gdrive-webdav-cfworkers.git"
+  },
+  "scripts": {
+    "build": "webpack"
+  },
+  "version": "1.0.0"
+}
