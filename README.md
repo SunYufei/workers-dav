@@ -1,4 +1,4 @@
-<center><image src="doc/icon.png" /></center>
+<center><image src="https://cdn.jsdelivr.net/gh/SunYufei/gdrive-webdav-cfworkers@master/doc/icon.png" /></center>
 
 使用 Cloudflare Workers 为 Google Drive 提供 WebDAV 支持
 
@@ -22,7 +22,7 @@ _待补充..._
 
 [Google Drive API](doc/Google%20Drive%20API.md)
 
-[WebDAV](doc/WebDAV.md)
+[WebDAV Methods](doc/WebDAV.md)
 
 ## 参考内容 / References
 
