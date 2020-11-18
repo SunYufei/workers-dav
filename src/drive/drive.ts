@@ -88,6 +88,22 @@ export default class GoogleDrive {
     }
 
     /**
+     * DELETE
+     * @param path 
+     */
+    public async delete(path: string) {
+        console.log('delete', path);
+        const id = this.itemId(path);
+        if (id != null) {
+            const url = `${this.fileURI}/{id}`;
+            const option = await this.requestOption();
+            return await fetch(url, option);
+        } else {
+            return new Response(null, { status: 404 });
+        }
+    }
+
+    /**
      * default request option
      * @private
      */
