@@ -1,4 +1,4 @@
-import { get, mkcol, propfind } from './handler';
+import { unlock } from "./handler";
 
 addEventListener('fetch', (event) => {
     event.respondWith(handleRequest(event.request))
@@ -11,15 +11,9 @@ async function handleRequest(request: Request) {
 
     // default response: 405 method not allowed
     let response = new Response(null, { status: 405 });
-    if (method === 'GET') {
-        response = await get(path, request.headers.get('Range') || '');
-    } else if (method === 'PROPFIND') {
-        response = await propfind(path, request.headers.get('Depth') || '0');
-    } else if (method === 'MKCOL') {
-        // MKCOL without Extended-MKCOL (RFC 5689) supported
-        response = await mkcol(path);
-    } else if (method === 'OPTIONS') {
-        
+
+    if (method === 'UNLOCK') {
+        return await unlock();
     }
 
     // CORS config

@@ -12,15 +12,15 @@ __功能开发中 / This project is under development.__
 |:--|:--|:--|:--|
 |获取支持选项|OPTIONS|options()|/|
 |获取资源属性/目录层次结构|PROPFIND|propfind(path, depth)|**TBD**|
-|新建目录|MKCOL|mkcol(path)|createPath(path)|
-|删除文件/目录|DELETE|delete(path)|delete(path)|
-|移动/重命名文件/目录|MOVE|move(src, dest)|**TBD**|
 |获取文件内容|GET|get(path, range)|fetchFile(path, range)|
 |无响应消息体的 GET|HEAD|head(path)|**TBD**|
 |修改文件内容|PUT|**TBD**|**TBD**|
 |更改/删除资源属性|PROPPATCH|**TBD**|**TBD**|
+|移动/重命名文件/目录|MOVE|move(src, dest)|**TBD**|
+|删除文件/目录|DELETE|unlink(path)|unlink(path)|
+|新建目录|MKCOL|mkcol(path)|createPath(path)|
 |锁定文件/目录|LOCK|lock(path)|暂不支持|
-|解锁文件/目录|UNLOCK|unlock(path)|暂不支持|
+|√ 解锁文件/目录|UNLOCK|unlock()|暂不支持|
 
 
 ## 文档 / Docs

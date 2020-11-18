@@ -1,6 +1,6 @@
 import { client_id, client_secret, refresh_token, root } from './config.json';
 
-function enQuery(data: { [key: string]: string }) {
+function enQuery(data: { [key: string]: string }): string {
     const ret = [];
     for (const key in data) {
         ret.push(`${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`);
@@ -8,7 +8,7 @@ function enQuery(data: { [key: string]: string }) {
     return ret.join('&');
 }
 
-function trimSlash(path: string) {
+function trimSlash(path: string): string {
     return path.replace(/^\/+|\/+$/g, '');
 }
 
@@ -16,7 +16,7 @@ export default class GoogleDrive {
     private accessToken = null;
     private expires = new Date(Date.now() - 1000).getMilliseconds();
     private fileURI = 'https://www.googleapis.com/drive/v3/files';
-    // private uploadURI = 'https://www.googleapis.com/upload/drive/v3/files';
+    private uploadURI = 'https://www.googleapis.com/upload/drive/v3/files';
     private oAuthURI = 'https://www.googleapis.com/oauth2/v4/token';
     private idCache = Object({ '': { '': root } });
 
@@ -26,7 +26,7 @@ export default class GoogleDrive {
      * @param range
      * @returns {Promise<Response>}
      */
-    public async fetchFile(path: string, range: string) {
+    public async fetchFile(path: string, range: string): Promise<Response> {
         console.log('fetchFile', path, range);
         const id = this.itemId(path);
         if (id != null) {
@@ -44,7 +44,7 @@ export default class GoogleDrive {
      * @param path
      * @private
      */
-    private async itemId(path: string) {
+    private async itemId(path: string): Promise<string | null> {
         let parent = '';
         let id = this.idCache[parent][''];
         // get id of each part of path
@@ -78,29 +78,12 @@ export default class GoogleDrive {
         return id;
     }
 
-    /**
-     * create path
-     * @param path
-     * @public
-     */
     public async createPath(path: string) {
-        return null;
+
     }
 
-    /**
-     * DELETE
-     * @param path 
-     */
-    public async delete(path: string) {
-        console.log('delete', path);
-        const id = this.itemId(path);
-        if (id != null) {
-            const url = `${this.fileURI}/{id}`;
-            const option = await this.requestOption();
-            return await fetch(url, option);
-        } else {
-            return new Response(null, { status: 404 });
-        }
+    public async unlink(path: string) {
+
     }
 
     /**
@@ -111,8 +94,8 @@ export default class GoogleDrive {
         return {
             method: 'GET',
             headers: Object({
-                'authorization': `Bearer ${await this.getAccessToken()}`,
-                'content-type': 'application/json'
+                'Authorization': `Bearer ${await this.getAccessToken()}`,
+                'Content-Type': 'application/json'
             })
         }
     }
@@ -121,7 +104,7 @@ export default class GoogleDrive {
      * get or update access token
      * @private
      */
-    private async getAccessToken() {
+    private async getAccessToken(): Promise<string | null> {
         // update access token when it's outdated
         if (this.accessToken == null || this.expires < Date.now()) {
             console.log('_getAccessToken', 'get access token');
@@ -133,7 +116,7 @@ export default class GoogleDrive {
             };
             const requestOption = {
                 method: 'POST',
-                headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: enQuery(postData)
             };
             const response = await fetch(this.oAuthURI, requestOption);
