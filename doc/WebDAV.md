@@ -9,7 +9,6 @@
 	|- file2.doc
 ```
 
-## OPTIONS 询问可执行哪些方法
 
 ## PROPFIND
 
@@ -351,11 +350,11 @@ HTTP/1.1 204 No Content
 
 ## 其他
 
-- POST：添加资源
+- POST 添加资源
+- COPY 资源复制
+- TRACE 远程诊断服务器
+- OPTIONS 询问可执行哪些方法
 
-- COPY：资源复制
-
-- TRACE：远程诊断服务器
 
 # 举例
 

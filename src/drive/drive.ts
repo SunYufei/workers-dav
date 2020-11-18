@@ -1,4 +1,4 @@
-import {client_id, client_secret, refresh_token, root} from './config.json';
+import { client_id, client_secret, refresh_token, root } from './config.json';
 
 function enQuery(data: { [key: string]: string }) {
     const ret = [];
@@ -16,9 +16,9 @@ export default class GoogleDrive {
     private accessToken = null;
     private expires = new Date(Date.now() - 1000).getMilliseconds();
     private fileURI = 'https://www.googleapis.com/drive/v3/files';
-    // private _uploadURI = 'https://www.googleapis.com/upload/drive/v3/files';
+    // private uploadURI = 'https://www.googleapis.com/upload/drive/v3/files';
     private oAuthURI = 'https://www.googleapis.com/oauth2/v4/token';
-    private idCache = Object({'': {'': root}});
+    private idCache = Object({ '': { '': root } });
 
     /**
      * fetch file content
@@ -35,7 +35,7 @@ export default class GoogleDrive {
             option.headers['Range'] = range;
             return await fetch(url, option);
         } else {
-            return new Response(null, {status: 404});
+            return new Response(null, { status: 404 });
         }
     }
 
@@ -79,6 +79,15 @@ export default class GoogleDrive {
     }
 
     /**
+     * create path
+     * @param path
+     * @public
+     */
+    public async createPath(path: string) {
+        return null;
+    }
+
+    /**
      * default request option
      * @private
      */
@@ -108,7 +117,7 @@ export default class GoogleDrive {
             };
             const requestOption = {
                 method: 'POST',
-                headers: {'content-type': 'application/x-www-form-urlencoded'},
+                headers: { 'content-type': 'application/x-www-form-urlencoded' },
                 body: enQuery(postData)
             };
             const response = await fetch(this.oAuthURI, requestOption);

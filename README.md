@@ -20,9 +20,24 @@ _待补充..._
 
 ## 文档 / Docs
 
-[Google Drive API](doc/Google%20Drive%20API.md)
+1. [Google Drive API](doc/Google%20Drive%20API.md)
 
-[WebDAV Methods](doc/WebDAV.md)
+2. [WebDAV Methods](doc/WebDAV.md)
+
+    |请求|请求处理函数|Google Drive 接口|
+    |:--|:--|:--|
+    |OPTIONS|options()|/|
+    |GET|get(path, range)|fetchFile(path, range)|
+    |HEAD|_TBD_|_TBD_|
+    |LOCK|_TBD_|_TBD_|
+    |UNLOCK|_TBD_|_TBD_|
+    |MKCOL|mkcol(path)|createPath(path)|
+    |MOVE|move(src, dest)|_TBD_|
+    |DELETE|delete(path)|_TBD_|
+    |PROPFIND|propfind(path, depth)|_TBD_|
+    |PROPPATCH|_TBD_|_TBD_|
+    |PUT|_TBD_|_TBD_|
+
 
 ## 参考内容 / References
 
