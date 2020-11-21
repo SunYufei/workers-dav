@@ -1,4 +1,4 @@
-import { unlock } from "./handler";
+import {get, head, lock, mkcol, move, options, propfind, unlink, unlock} from './handler';
 
 addEventListener('fetch', (event) => {
     event.respondWith(handleRequest(event.request))
@@ -10,11 +10,32 @@ async function handleRequest(request: Request) {
     const method = request.method;
 
     // default response: 405 method not allowed
-    let response = new Response(null, { status: 405 });
+    let response = new Response(null, {status: 405});
 
-    if (method === 'UNLOCK') {
-        return await unlock();
-    }
+    if (method === 'OPTIONS')
+        response = await options();
+    else if (method === 'PROPFIND')
+        response = await propfind(path, request.headers.get('Depth') || '0');
+    else if (method === 'GET')
+        response = await get(path, request.headers.get('Range') || '0');
+    else if (method === 'HEAD')
+        response = await head(path);
+    else if (method === 'PUT') {
+        // TODO add PUT interface
+        response = new Response(null, {status: 200});
+    } else if (method === 'PROPPATCH') {
+        // TODO add PROPPATCH interface
+        response = new Response(null, {status: 200});
+    } else if (method === 'MOVE')
+        response = await move(path, request.headers.get('Destination') || '');
+    else if (method === 'DELETE')
+        response = await unlink(path);
+    else if (method === 'MKCOL')
+        response = await mkcol(path);
+    else if (method === 'LOCK')
+        response = await lock(path);
+    else if (method === 'UNLOCK')
+        response = await unlock();
 
     // CORS config
     response = new Response(response.body, response);

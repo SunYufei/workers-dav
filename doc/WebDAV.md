@@ -1,5 +1,22 @@
 # WebDAV Methods
 
+## OPTIONS 询问可执行哪些方法
+
+```http
+OPTIONS http://a.net/ HTTP/1.1
+translate: f
+```
+
+```http
+HTTP/1.1 200 OK
+Allow: GET, POST, OPTIONS, HEAD, MKCOL, PUT, PROPFIND, PROPPATCH, DELETE, MOVE, COPY, LOCK, UNLOCK
+DAV: 1, 2
+```
+
+
+
+
+
 以如下目录结构为例
 
 ```
@@ -13,42 +30,6 @@
 ## PROPFIND
 
 ### 检查资源属性 Depth: 0
-
-```http
-PROPFIND http://a.net/DAVTest HTTP/1.1
-Depth: 0
-translate: f
-```
-
-```http
-HTTP/1.1 207 Multi-Status
-Content-Type: text/xml; charset=UTF-8
-
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<d:multistatus xmlns:d="DAV:" xmlns:s="http://a.net">
-	<d:response>
-		<d:href>/DAVTest/</d:href>
-		<d:propstat>
-			<d:prop>
-				<d:getlastmodified>Mon, 16 Nov 2020 10:34:40 GMT</d:getlastmodified>
-				<d:getcontentlength>0</d:getcontentlength>
-				<d:getetag/>
-				<d:current-user-privilege-set>
-					<d:privilege><d:read/></d:privilege>
-					<d:privilege><d:write/></d:privilege>
-					<d:privilege><d:all/></d:privilege>
-					<d:privilege><d:read_acl/></d:privilege>
-					<d:privilege><d:write_acl/></d:privilege>
-                </d:current-user-privilege-set>
-                <d:getcontenttype>httpd/unix-directory</d:getcontenttype>
-                <d:displayname>DAVTest</d:displayname>
-                <d:resourcetype><d:collection/></d:resourcetype>
-            </d:prop>
-            <d:status>HTTP/1.1 200 OK</d:status>
-        </d:propstat>
-    </d:response>
-</d:multistatus>
-```
 
 ```http
 PROPFIND http://a.net/DAVTest/file1.txt HTTP/1.1
@@ -353,7 +334,6 @@ HTTP/1.1 204 No Content
 - POST 添加资源
 - COPY 资源复制
 - TRACE 远程诊断服务器
-- OPTIONS 询问可执行哪些方法
 
 
 # 举例
