@@ -7,8 +7,8 @@ export async function options(): Promise<Response> {
     console.log('options')
     return new Response(null, {
         headers: {
-            'Allow': 'GET, POST, OPTIONS, HEAD, MKCOL, PUT, PROPFIND, PROPPATCH, DELETE, MOVE, COPY, LOCK, UNLOCK',
-            'DAV': '1, 2'
+            'Allow': 'OPTIONS, PROPFIND, PROPPATCH, MLCOL, GET, HEAD, POST, DELETE, PUT, COPY, MOVE',
+            'DAV': '1'
         }
     })
 }
@@ -22,6 +22,7 @@ export async function propfind(path: string, depth: string): Promise<Response> {
         <D:href>${path}</D:href>
         <D:propstat>
             <D:prop>
+                <D:getcontentlength>0</D:getcontentlength>
                 <D:getcontenttype>httpd/unix-directory</D:getcontenttype>
                 <D:resourcetype><D:collection/></D:resourcetype>
             </D:prop>
@@ -38,6 +39,15 @@ export async function propfind(path: string, depth: string): Promise<Response> {
     });
 }
 
+export async function proppatch() {
+
+}
+
+export async function mkcol(path: string): Promise<Response> {
+    // TODO fill body
+    return new Response(null, {status: 200});
+}
+
 export async function get(path: string, range: string): Promise<Response> {
     return await gd.fetchFile(path, range);
 }
@@ -47,17 +57,25 @@ export async function head(path: string): Promise<Response> {
     return new Response(null, {status: 200});
 }
 
-export async function move(src: string, dest: string): Promise<Response> {
-    // TODO fill body
-    return new Response(null, {status: 200});
+export async function post() {
+
 }
 
 export async function unlink(path: string): Promise<Response> {
-    // TODO fill body
+    // TODO for path, delete file in recursion
+    // TODO for file, delete it
     return new Response(null, {status: 200});
 }
 
-export async function mkcol(path: string): Promise<Response> {
+export async function put() {
+
+}
+
+export async function copy() {
+
+}
+
+export async function move(src: string, dest: string): Promise<Response> {
     // TODO fill body
     return new Response(null, {status: 200});
 }

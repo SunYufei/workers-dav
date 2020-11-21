@@ -2,5 +2,5 @@
 dist/
 node_modules/
 worker/
-cache.json
 config.json
+*.pdf

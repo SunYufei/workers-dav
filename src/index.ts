@@ -15,23 +15,25 @@ async function handleRequest(request: Request) {
     if (method === 'OPTIONS')
         response = await options();
     else if (method === 'PROPFIND')
-        response = await propfind(path, request.headers.get('Depth') || '0');
+        response = await propfind(path, request.headers.get('Depth') || 'infinity');
+    else if (method === 'PROPPATCH') {
+
+    } else if (method === 'MKCOL')
+        response = await mkcol(path);
     else if (method === 'GET')
         response = await get(path, request.headers.get('Range') || '0');
     else if (method === 'HEAD')
         response = await head(path);
+    else if (method === 'POST') {
+
+    } else if (method === 'DELETE')
+        response = await unlink(path);
     else if (method === 'PUT') {
-        // TODO add PUT interface
-        response = new Response(null, {status: 200});
-    } else if (method === 'PROPPATCH') {
-        // TODO add PROPPATCH interface
-        response = new Response(null, {status: 200});
+
+    } else if (method === 'COPY') {
+
     } else if (method === 'MOVE')
         response = await move(path, request.headers.get('Destination') || '');
-    else if (method === 'DELETE')
-        response = await unlink(path);
-    else if (method === 'MKCOL')
-        response = await mkcol(path);
     else if (method === 'LOCK')
         response = await lock(path);
     else if (method === 'UNLOCK')

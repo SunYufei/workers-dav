@@ -4,37 +4,35 @@
 
 ```http
 OPTIONS http://a.net/ HTTP/1.1
-translate: f
 ```
 
 ```http
 HTTP/1.1 200 OK
-Allow: GET, POST, OPTIONS, HEAD, MKCOL, PUT, PROPFIND, PROPPATCH, DELETE, MOVE, COPY, LOCK, UNLOCK
+Allow: OPTIONS, PROPFIND, PROPPATCH, MLCOL, GET, HEAD, POST, DELETE, PUT, COPY, MOVE
+DAV: 1
+```
+
+或
+
+```http
+HTTP/1.1 200 OK
+Allow: OPTIONS, PROPFIND, PROPPATCH, MKCOL, GET, HEAD, POST, DELETE, PUT, COPY, MOVE, LOCK, UNLOCK
 DAV: 1, 2
 ```
 
+## PROPFIND 获取资源属性、目录层次结构
 
+### Depth Header
 
+- 仅用于资源（Depth: 0）
+- 仅应用于资源及其内部成员（Depth: 1）
+- 应用于资源及其所有成员（Depth: infinity，默认）
 
-
-以如下目录结构为例
-
-```
-/DAVTest
-	|- folder1/
-	|- file1.txt
-	|- file2.doc
-```
-
-
-## PROPFIND
-
-### 检查资源属性 Depth: 0
+### Depth: 0
 
 ```http
 PROPFIND http://a.net/DAVTest/file1.txt HTTP/1.1
 Depth: 0
-translate: f
 ```
 
 ```http
@@ -67,12 +65,11 @@ Content-Type: text/xml; charset=UTF-8
 </d:multistatus>
 ```
 
-### 目录层次结构 Depth: 1
+### Depth: 1
 
 ```http
 PROPFIND http://a.net/DAVTest HTTP/1.1
 Depth: 1
-translate: f
 ```
 
 ```http
@@ -167,23 +164,50 @@ Content-Type: text/xml; charset=UTF-8
 	</d:response>
 ```
 
+## PROPPATCH 更改和删除资源属性
+
+```http
+PROPPATCH https://dav.jianguoyun.com/dav/Cloud/DAVTest/file1.txt HTTP/1.1
+Content-Type: text/xml; charset=UTF-8
+If: (<opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce>)
+translate: f
+
+<?xml version="1.0" encoding="utf-8" ?>
+<D:propertyupdate xmlns:D="DAV:" xmlns:Z="urn:schemas-microsoft-com:">
+	<D:set>
+		<D:prop>
+			<Z:Win32LastAccessTime>Mon, 16 Nov 2020 11:29:04 GMT</Z:Win32LastAccessTime>
+			<Z:Win32LastModifiedTime>Mon, 16 Nov 2020 11:29:04 GMT</Z:Win32LastModifiedTime>
+		</D:prop>
+	</D:set>
+</D:propertyupdate>
+```
+
+```http
+HTTP/1.1 207 Multi-Status
+Content-Type: text/xml; charset=UTF-8
+
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<d:multistatus xmlns:d="DAV:" xmlns:s="http://a.net">
+	<d:response>
+		<d:href>/DAVTest/file1.txt</d:href>
+		<d:propstat>
+			<d:prop>
+				<m:Win32LastAccessTime xmlns:m="urn:schemas-microsoft-com:"/>
+				<m:Win32CreationTime xmlns:m="urn:schemas-microsoft-com:"/>
+				<m:Win32LastModifiedTime xmlns:m="urn:schemas-microsoft-com:"/>
+				<m:Win32FileAttributes xmlns:m="urn:schemas-microsoft-com:"/>
+			</d:prop>
+			<d:status>HTTP/1.1 200 OK</d:status>
+		</d:propstat>
+	</d:response>
+</d:multistatus>
+```
+
 ## MKCOL 创建目录
 
 ```http
 MKCOL http://a.net/folder HTTP/1.1
-translate: f
-```
-
-```http
-HTTP/1.1 201 Created
-```
-
-## MOVE 资源移动或重命名
-
-```http
-MOVE http://a.net/src HTTP/1.1
-Destination: http://a.net/dest
-Overwrite: F
 translate: f
 ```
 
@@ -210,6 +234,74 @@ HEAD http://a.net/DAVTest/file1.txt HTTP/1.1
 
 ```http
 HTTP/1.1 200 OK
+```
+
+## POST
+
+
+## DELETE 销毁资源或集合
+
+对于文件
+
+```http
+DELETE https://a.net/folder/file1.txt HTTP/1.1
+```
+
+```http
+HTTP/1.1 204 No Content
+```
+
+对于目录，若目录中的某项内容被锁定，则需要返回 207 Multi Status
+
+
+```http
+DELETE /folder/ HTTP/1.1
+```
+
+```http
+HTTP/1.1 207 Multi-Status
+Content-Type: application/xml; charset=UTF-8
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<d:multistatus xmlns:d="DAV:">
+	<d:response>
+		<d:href>http://a.net/container/file1.txt</d:href>
+		<d:status>HTTP/1.1 423 Locked</d:status>
+		<d:error><d:lock-token-submitted/></d:error>
+	</d:response>
+</d:multistatus>
+```
+
+在成功的删除操作后，对目标的后续 URI 请求 GET / HEAD / PROPFIND 请求必须返回 404 Not Found
+
+## PUT 修改资源
+
+```http
+PUT http://a.net/DAVTest/file1.txt HTTP/1.1
+If: (<opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce>)
+translate: f
+
+content in file1.txt
+```
+
+```http
+HTTP/1.1 204 No Content
+X-File-Version: 2
+```
+
+## COPY 资源复制
+
+## MOVE 资源移动或重命名
+
+```http
+MOVE http://a.net/src HTTP/1.1
+Destination: http://a.net/dest
+Overwrite: F
+translate: f
+```
+
+```http
+HTTP/1.1 201 Created
 ```
 
 ## LOCK 锁定资源
@@ -255,85 +347,12 @@ Lock-Token: opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce
 
 ```http
 UNLOCK http://a.net/DAVTest/file1.txt HTTP/1.1
-translate: f
 Lock-Token: <opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce>
 ```
 
 ```http
 HTTP/1.1 204 No Content
 ```
-
-## PUT 修改资源
-
-```http
-PUT http://a.net/DAVTest/file1.txt HTTP/1.1
-If: (<opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce>)
-translate: f
-
-content in file1.txt
-```
-
-```http
-HTTP/1.1 204 No Content
-X-File-Version: 2
-```
-
-## PROPPATCH 更改和删除资源属性
-
-```http
-PROPPATCH https://dav.jianguoyun.com/dav/Cloud/DAVTest/file1.txt HTTP/1.1
-Content-Type: text/xml; charset=UTF-8
-If: (<opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce>)
-translate: f
-
-<?xml version="1.0" encoding="utf-8" ?>
-<D:propertyupdate xmlns:D="DAV:" xmlns:Z="urn:schemas-microsoft-com:">
-	<D:set>
-		<D:prop>
-			<Z:Win32LastAccessTime>Mon, 16 Nov 2020 11:29:04 GMT</Z:Win32LastAccessTime>
-			<Z:Win32LastModifiedTime>Mon, 16 Nov 2020 11:29:04 GMT</Z:Win32LastModifiedTime>
-		</D:prop>
-	</D:set>
-</D:propertyupdate>
-```
-
-```http
-HTTP/1.1 207 Multi-Status
-Content-Type: text/xml; charset=UTF-8
-
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<d:multistatus xmlns:d="DAV:" xmlns:s="http://a.net">
-	<d:response>
-		<d:href>/DAVTest/file1.txt</d:href>
-		<d:propstat>
-			<d:prop>
-				<m:Win32LastAccessTime xmlns:m="urn:schemas-microsoft-com:"/>
-				<m:Win32CreationTime xmlns:m="urn:schemas-microsoft-com:"/>
-				<m:Win32LastModifiedTime xmlns:m="urn:schemas-microsoft-com:"/>
-				<m:Win32FileAttributes xmlns:m="urn:schemas-microsoft-com:"/>
-			</d:prop>
-			<d:status>HTTP/1.1 200 OK</d:status>
-		</d:propstat>
-	</d:response>
-</d:multistatus>
-```
-
-## DELETE 销毁资源或集合
-
-```http
-DELETE https://a.net/DAVTest/folder2 HTTP/1.1
-translate: f
-```
-
-```http
-HTTP/1.1 204 No Content
-```
-
-## 其他
-
-- POST 添加资源
-- COPY 资源复制
-- TRACE 远程诊断服务器
 
 
 # 举例
