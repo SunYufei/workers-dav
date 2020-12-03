@@ -237,7 +237,7 @@ Content-Type: application/json
 **请求参数**
 
 |参数名称|类型|说明|
-|:--|:--|:--|
+|:---|:---|:---|
 |fileId|string|文件 ID|
 |fields|string|指定返回的响应字段，如 `files(id, name, mimeType)`|
 |supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false)|
@@ -245,7 +245,7 @@ Content-Type: application/json
 **请求正文**
 
 |参数名称|类型|说明|
-|:--|:--|:--|
+|:---|:---|:---|
 |contentRestrictions[].readOnly|boolean|文件是否只读|
 |description|string|文件简短说明|
 |id|string|文件 ID|
@@ -283,14 +283,14 @@ Content-Type: application/json
 **请求参数**
 
 |参数名称|类型|说明|
-|:--|:--|:--|
+|:---|:---|:---|
 |uploadType|string|上传到 URI 的请求类型，如果需要上传数据，此字段必须。包括：media，multipart，resumable|
 |supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false)|
 
 **请求正文**
 
 |参数名称|类型|说明|
-|:--|:--|:--|
+|:---|:---|:---|
 |contentRestrictions[].readOnly|boolean|文件的内容是否为只读|
 |createdTime|datetime|文件创建时间 RFC3339|
 |description|string|文件的简短说明|
@@ -366,9 +366,8 @@ Content-Type: application/json
 **请求参数**
 
 |参数名称|类型|说明|
-|:--|:--|:--|
-|fileId|string|文件 ID|
-|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false)|
+|:---|:---|:---|
+|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false）|
 
 **请求正文**
 
@@ -413,7 +412,7 @@ Content-Type: application/json
 **请求参数**
 
 |参数名称|类型|说明|
-|:--|:--|:--|
+|:---|:---|:---|
 |fileId|string|文件 ID|
 |alt|string|alt=media 获取文件内容，不指定获取 metadata|
 |fields|string|指定返回的响应字段，如 `files(id, name, mimeType)`|
@@ -442,7 +441,7 @@ Content-Type: application/json
 **请求参数**
 
 |参数名称|类型|说明|
-|:--|:--|:--|
+|:---|:---|:---|
 |driveId|string|共享驱动器 ID|
 |fields|string|指定返回的响应字段，如 `files(id, name, mimeType)`|
 |includeItemsFromAllDrives|boolean|结果中包含我的驱动器和共享驱动器项目|
@@ -472,7 +471,7 @@ Content-Type: application/json
 ```
 
 |属性名|类型|说明|
-|:--|:--|:--|
+|:---|:---|:---|
 |kind|string|标识资源类型，`drive#fileList`|
 |nextPageToken|string|文件下一页的页面令牌，若到文件列表的末尾，不存在此项|
 |files[]|list|文件列表|

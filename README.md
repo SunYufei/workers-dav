@@ -16,7 +16,7 @@ __功能开发中 / This project is under development.__
 | |新建目录|MKCOL|mkcol(path)|mkdir(path)|
 | |获取文件内容|GET|get(path, range)|fetchFile(path, range)|
 | |无响应消息体的 GET|HEAD|head(path)|**TBD**|
-| |删除文件/目录|DELETE|unlink(path)|**TBD**|
+| |删除文件/目录|DELETE|unlink(path)|unlink(path)|
 | |修改文件内容|PUT|**TBD**|**TBD**|
 | |复制文件/目录|COPY|**TBD**|**TBD**|
 | |移动/重命名文件/目录|MOVE|move(src, dest)|**TBD**|

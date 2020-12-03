@@ -13,17 +13,19 @@ function trimSlash(path: string): string {
 }
 
 export default class GoogleDrive {
-    // access token
+    // accessToken and expires
     private accessToken = null;
-    private expires = new Date(Date.now() - 1000).getMilliseconds();
+    private expires = Date.now();
     // URIs
-    private fileURI = 'https://www.googleapis.com/drive/v3/files?supportsAllDrives=true';
-    private uploadURI = 'https://www.googleapis.com/upload/drive/v3/files?supportsAllDrives=true';
+    private fileURI = 'https://www.googleapis.com/drive/v3/files';
+    private uploadURI = 'https://www.googleapis.com/upload/drive/v3/files';
     private oAuthURI = 'https://www.googleapis.com/oauth2/v4/token';
-    // info cache, save format -> path: id
-    private infoCache = Object({'/': {id: root, contentLength: 0, contentType: 'httpd/unix-directory'}});
+    // infoCache
+    private infoCache: { [path: string]: { id: string, size: string, mimeType: string } } = {
+        '/': {id: root, size: '0', mimeType: 'application/vnd.google-apps.folder'}
+    };
     // list cache, save format -> folder: item
-    private listCache = Object({'/': []});
+    private listCache: { [path: string]: Array<string> } = {};
 
     /**
      * fetch file content
@@ -36,66 +38,119 @@ export default class GoogleDrive {
         const info = await this.itemInfo(path);
         if (info != null) {
             const url = `${this.fileURI}/${info.id}?alt=media`;
-            const option = await this.requestOption();
-            option.headers['Range'] = range;
-            return await fetch(url, option);
+            const requestOption = {
+                method: 'GET',
+                headers: await this.authHeader()
+            }
+            requestOption.headers['Range'] = range;
+            return await fetch(url, requestOption);
         } else {
             return new Response(null, {status: 404});
         }
     }
 
-    private async itemInfo(path: string): Promise<{ id: string, contentLength: number, contentType: string } | null> {
+    /**
+     * get path info, include id, size, mimeType
+     * @param path
+     * @public
+     */
+    public async itemInfo(path: string) {
         // get info of each part of path
         let parent = '/';
-        let id = this.infoCache[parent][''];
+        let id = this.infoCache[parent].id;
         // get id of each part of path
         for (let name of trimSlash(path).split('/')) {
             name = decodeURIComponent(name).replace(/'/g, "\\'");
-            if (this.infoCache[parent][name] === undefined) {
+            const next = `${parent}/${name}`;
+            if (this.infoCache[next] === undefined) {
                 const params = {
+                    'supportsAllDrives': 'true',
                     'includeItemsFromAllDrives': 'true',
                     'q': `'${id}' in parents and trashed=false`,
-                    'fields': 'files(id, name, mimeType)'
+                    'fields': 'files(id, name, mimeType, size)'
                 };
                 const url = `${this.fileURI}?${enQuery(params)}`;
-                const option = await this.requestOption();
-                const response = await fetch(url, option);
+                const requestOption = {
+                    method: 'GET',
+                    headers: await this.authHeader()
+                }
+                const response = await fetch(url, requestOption);
                 const data = await response.json();
-                if (data.files.length == 0) {
-                    return null
+                if (data.files.length !== 0) {
+                    for (const f of data.files) {
+                        this.infoCache[`${parent}/${f['name']}`] = {
+                            id: f['id'], size: f['size'], mimeType: f['mimeType']
+                        }
+                        if (this.listCache[parent] === undefined) {
+                            this.listCache[parent] = [];
+                        }
+                        this.listCache[parent].push(f['name']);
+                    }
                 } else {
-                    // TODO save to infoCache and listCache
-                    // TODO merge two caches
-                    // TODO find param path's info
+                    console.log('itemInfo', `get info of ${next} failed`);
+                    return null;
                 }
             }
             // get next part of path
-            // TODO change id
-            parent = `${parent}/${name}`;
-            // TODO mkdir in cache
+            id = this.infoCache[next].id;
+            parent = next;
         }
         return this.infoCache[path];
     }
 
     public async mkdir(path: string): Promise<boolean> {
-        return false;
+        if (await this.itemInfo(path) == null) {
+            let parent = '/';
+            let id = this.infoCache[parent].id;
+            for (let name of trimSlash(path).split('/')) {
+                name = decodeURIComponent(name).replace(/'/g, "\\'");
+                const next = `${parent}/${name}`;
+                if (this.infoCache[next] === undefined) {
+                    const body = {
+                        'name': name,
+                        'mimeType': 'application/vnd.google-apps.folder',
+                        'parents': [id]
+                    }
+                    const requestOption = {
+                        method: 'POST',
+                        headers: await this.authHeader(),
+                        body: JSON.stringify(body)
+                    }
+                    const response = await fetch(this.fileURI, requestOption);
+                    // TODO handle response
+                }
+                // get next part of path
+                id = this.infoCache[next].id;
+                parent = next;
+            }
+        }
+        return true;
     }
 
     public async unlink(path: string): Promise<boolean> {
-        return false;
+        // TODO folder unlink
+        const info = await this.itemInfo(path);
+        if (info == null)
+            return false;
+        const url = `${this.fileURI}/${info.id}?supportsAllDrives=true`;
+        const requestOption = {
+            method: 'DELETE',
+            headers: await this.authHeader()
+        }
+        const response = await fetch(url, requestOption);
+        if (response.status === 200 && response.headers.get('Content-Length') === '0') {
+            // delete info in infoCache
+            delete this.infoCache[path];
+            // TODO delete info in listCache
+            return true;
+        } else
+            return false;
     }
 
-    /**
-     * default request option
-     * @private
-     */
-    private async requestOption(): Promise<{ method: string, headers: { [header: string]: string } }> {
+    private async authHeader(): Promise<{ [header: string]: string }> {
         return {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${await this.getAccessToken()}`,
-                'Content-Type': 'application/json'
-            }
+            'Authorization': `Bearer ${await this.getAccessToken()}`,
+            'Content-Type': 'application/json'
         }
     }
 
