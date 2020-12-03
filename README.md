@@ -1,4 +1,4 @@
-<center><image src="doc/icon.png"></image></center>
+![](doc/icon.png)
 
 使用 Cloudflare Workers 为 Google Drive 提供 WebDAV 支持
 
@@ -8,21 +8,20 @@ __功能开发中 / This project is under development.__
 
 ## 主要功能
 
-| |功能|WebDAV 请求|请求处理方法|Google Drive 接口|
-|---:|:---|:---|:---|:---|
+| |功能|WebDAV Methods|请求处理方法|Google Drive 接口|
+|---:|:---:|:---:|:---|:---|
 |√|获取支持选项|OPTIONS|options()|/|
-| |获取资源属性<br>或目录层次结构|PROPFIND|propfind(path, depth)|**TBD**|
+| |获取资源属性<br>目录层次结构|PROPFIND|propfind(path, depth)|**TBD**|
 | |更改/删除资源属性|PROPPATCH|**TBD**|**TBD**|
-| |新建目录|MKCOL|mkcol(path)|createPath(path)|
+| |新建目录|MKCOL|mkcol(path)|mkdir(path)|
 | |获取文件内容|GET|get(path, range)|fetchFile(path, range)|
 | |无响应消息体的 GET|HEAD|head(path)|**TBD**|
-| | |POST|**TBD**|**TBD**|
 | |删除文件/目录|DELETE|unlink(path)|**TBD**|
 | |修改文件内容|PUT|**TBD**|**TBD**|
 | |复制文件/目录|COPY|**TBD**|**TBD**|
 | |移动/重命名文件/目录|MOVE|move(src, dest)|**TBD**|
-| |锁定文件/目录|LOCK|lock(path)|暂不支持|
-|√|解锁文件/目录|UNLOCK|unlock()|暂不支持|
+| |锁定文件/目录|LOCK|lock(path)|**暂不支持**|
+|√|解锁文件/目录|UNLOCK|unlock()|**暂不支持**|
 
 
 ## 文档 / Docs

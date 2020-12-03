@@ -7,7 +7,7 @@ export async function options(): Promise<Response> {
     console.log('options')
     return new Response(null, {
         headers: {
-            'Allow': 'OPTIONS, PROPFIND, PROPPATCH, MLCOL, GET, HEAD, POST, DELETE, PUT, COPY, MOVE',
+            'Allow': 'OPTIONS, PROPFIND, PROPPATCH, MLCOL, GET, HEAD, DELETE, PUT, COPY, MOVE',
             'DAV': '1'
         }
     })
@@ -15,25 +15,23 @@ export async function options(): Promise<Response> {
 
 export async function propfind(path: string, depth: string): Promise<Response> {
     console.log('propfind', path, depth)
-    // TODO handle depth = 0 here
-    let body = `<?xml version="1.0" encoding="UTF-8" ?>
-<D:multistatus xmlns:d="DAV:">
-    <D:response>
-        <D:href>${path}</D:href>
-        <D:propstat>
-            <D:prop>
-                <D:getcontentlength>0</D:getcontentlength>
-                <D:getcontenttype>httpd/unix-directory</D:getcontenttype>
-                <D:resourcetype><D:collection/></D:resourcetype>
-            </D:prop>
-            <D:status>HTTP/1.1 200 OK</D:status>
-        </D:propstat>
-    </D:response>
-</D:multistatus>`;
-    if (depth === '1') {
-        // TODO fill body here
-    }
-    return new Response(body, {
+    // TODO get info
+    const body = [`<?xml version="1.0" encoding="UTF-8" ?>`];
+    body.push(`
+<d:multistatus xmlns:d="DAV:">
+    <d:response>
+        <d:href>${path}</d:href>
+        <d:propstat>
+            <d:prop>
+                <d:getcontentlength>0</d:getcontentlength>
+                <d:getcontenttype>httpd/unix-directory</d:getcontenttype>
+                <d:resourcetype><d:collection/></d:resourcetype>
+            </d:prop>
+            <d:status>HTTP/1.1 200 OK</d:status>
+        </d:propstat>
+    </d:response>
+</d:multistatus>`);
+    return new Response(body.join(''), {
         status: 207,
         headers: {'Content-Type': 'text/xml; charset=UTF-8'}
     });
@@ -55,10 +53,6 @@ export async function get(path: string, range: string): Promise<Response> {
 export async function head(path: string): Promise<Response> {
     // TODO fill body
     return new Response(null, {status: 200});
-}
-
-export async function post() {
-
 }
 
 export async function unlink(path: string): Promise<Response> {

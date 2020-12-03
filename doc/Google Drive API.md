@@ -12,7 +12,7 @@ Content-Type: application/x-www-form-urlencoded
   "client_id": "xxx",
   "client_secret": "xxx", 
   "refresh_token": "xxx", 
-  "grant_type": "xxx"
+  "grant_type": "refresh_token"
 }
 ```
 
