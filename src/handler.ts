@@ -69,7 +69,7 @@ export async function copy() {
 
 }
 
-export async function move(src: string, dest: string): Promise<Response> {
+export async function move(src: string, dest: string | null): Promise<Response> {
     // TODO fill body
     return new Response(null, {status: 200});
 }

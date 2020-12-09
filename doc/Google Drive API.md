@@ -33,9 +33,9 @@ token_type: Bearer
 
 - Blob：文本或二进制内容，如图像、视频或PDF。
 - 文件夹：MIME type `application/vnd.google-apps.folder`.
-- 快捷方式**（不支持）**
-- 第三方快捷方式**（不支持）**
-- Google Workspace document **(不支持)**
+- 快捷方式 **（不支持）**
+- 第三方快捷方式 **（不支持）**
+- Google Workspace document **（不支持）**
 
 
 ### 文件特征
@@ -53,22 +53,9 @@ token_type: Bearer
     "name": string,           // file name
     "mimeType": string,       // MIME Type
     "description": string,    // 文件简短说明
-    "starred": boolean,
     "trashed": boolean,
-    "explicitlyTrashed": boolean,
-    "trashingUser": {
-      "kind": "drive#user",
-      "displayName": string,
-      "photoLink": string,
-      "me": boolean,
-      "permissionId": string,
-      "emailAddress": string
-    },
     "trashedTime": datetime,
     "parents": [  string  ],	// 父文件夹 ID
-    "properties": {  (key): string  },
-    "appProperties": {  (key): string  },
-    "spaces": [  string  ],
     "version": long,  		// 文件的单调增加版本号
     "webContentLink": string, 
     "webViewLink": string,    // 浏览器中查看链接
@@ -76,21 +63,8 @@ token_type: Bearer
     "hasThumbnail": boolean,  // 是否有缩略图
     "thumbnailLink": string,  // 缩略图链接
     "thumbnailVersion": long,
-    "viewedByMe": boolean,
-    "viewedByMeTime": datetime,
     "createdTime": datetime,  // 文件创建时间
     "modifiedTime": datetime, // 文件上次修改时间
-    "modifiedByMeTime": datetime,
-    "modifiedByMe": boolean,
-    "sharedWithMeTime": datetime,
-    "sharingUser": {
-      "kind": "drive#user",
-      "displayName": string,
-      "photoLink": string,
-      "me": boolean,
-      "permissionId": string,
-      "emailAddress": string
-    },
     "owners": [
       {
         "kind": "drive#user",
@@ -102,57 +76,10 @@ token_type: Bearer
       }
     ],
     "driveId": string,
-    "lastModifyingUser": {
-      "kind": "drive#user",
-      "displayName": string,
-      "photoLink": string,
-      "me": boolean,
-      "permissionId": string,
-      "emailAddress": string
-    },
-    "shared": boolean,
-    "ownedByMe": boolean,
-    "capabilities": {
-      "canAddChildren": boolean,
-      "canAddFolderFromAnotherDrive": boolean,
-      "canAddMyDriveParent": boolean,
-      "canChangeCopyRequiresWriterPermission": boolean,
-      "canComment": boolean,
-      "canCopy": boolean,
-      "canDelete": boolean,
-      "canDeleteChildren": boolean,
-      "canDownload": boolean,
-      "canEdit": boolean,
-      "canListChildren": boolean,
-      "canModifyContent": boolean,
-      "canModifyContentRestriction": boolean,
-      "canMoveChildrenOutOfDrive": boolean,
-      "canMoveChildrenWithinDrive": boolean,
-      "canMoveItemOutOfDrive": boolean,
-      "canMoveItemWithinDrive": boolean,
-      "canReadRevisions": boolean,
-      "canReadDrive": boolean,
-      "canRemoveChildren": boolean,
-      "canRemoveMyDriveParent": boolean,
-      "canRename": boolean,
-      "canShare": boolean,
-      "canTrash": boolean,
-      "canTrashChildren": boolean,
-      "canUntrash": boolean
-    },
-    "copyRequiresWriterPermission": boolean,
-    "writersCanShare": boolean,
-    "permissions": [  permissions Resource  ],
-    "permissionIds": [  string  ],
-    "hasAugmentedPermissions": boolean,
-    "folderColorRgb": string,
     "originalFilename": string,
     "fullFileExtension": string,  // 完整文件扩展名 e.g. tar.gz
-    "fileExtension": string,
     "md5Checksum": string,    // MD5 校验和
     "size": long,             // 文件内容大小
-    "quotaBytesUsed": long,
-    "headRevisionId": string,
     "contentHints": {
       "thumbnail": {  "image": bytes,  "mimeType": string  },
       "indexableText": string
@@ -189,28 +116,7 @@ token_type: Bearer
       "height": integer,
       "durationMillis": long
     },
-    "isAppAuthorized": boolean,
     "exportLinks": {    (key): string  },
-    "shortcutDetails": {
-      "targetId": string,
-      "targetMimeType": string
-    },
-    "contentRestrictions": [
-      {
-        "readOnly": boolean,
-        "reason": string,
-        "restrictingUser": {
-          "kind": "drive#user",
-          "displayName": string,
-          "photoLink": string,
-          "me": boolean,
-          "permissionId": string,
-          "emailAddress": string
-        },
-        "restrictionTime": datetime,
-        "type": string
-      }
-    ]
   }
   ```
 
@@ -285,7 +191,7 @@ Content-Type: application/json
 |参数名称|类型|说明|
 |:---|:---|:---|
 |uploadType|string|上传到 URI 的请求类型，如果需要上传数据，此字段必须。包括：media，multipart，resumable|
-|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false)|
+|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false）|
 
 **请求正文**
 
@@ -329,13 +235,13 @@ Content-Type: application/json
 
 **请求参数**
 
-| 参数名称          | 类型    | 说明                                                         |
-| :---------------- | :------ | :----------------------------------------------------------- |
-| fileId            | string  | 文件 ID                                                      |
-| uploadType        | string  | 上传到 URI 的请求类型，如果需要上传数据，此字段必须。包括：media，multipart，resumable |
-| addParents        | string  | 要添加的父 ID 的逗号分隔列表                                 |
-| removeParents     | string  | 要删除的父 ID 的逗号分隔列表                                 |
-| supportsAllDrives | boolean | 请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false) |
+|参数名称|类型|说明|
+|:---|:---|:---|
+|fileId|string|文件 ID|
+|uploadType|string|上传到 URI 的请求类型，如果需要上传数据，此字段必须。包括：media，multipart，resumable|
+|addParents|string|要添加的父 ID 的逗号分隔列表|
+|removeParents|string|要删除的父 ID 的逗号分隔列表|
+|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false）|
 
 **请求正文**
 
@@ -415,8 +321,8 @@ Content-Type: application/json
 |:---|:---|:---|
 |fileId|string|文件 ID|
 |alt|string|alt=media 获取文件内容，不指定获取 metadata|
-|fields|string|指定返回的响应字段，如 `files(id, name, mimeType)`|
-|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false)|
+|fields|string|指定返回的响应字段，如 `files(id, name, mimeType, size)`|
+|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false）|
 
 **请求正文**
 

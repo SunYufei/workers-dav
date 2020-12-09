@@ -208,7 +208,6 @@ Content-Type: text/xml; charset=UTF-8
 
 ```http
 MKCOL http://a.net/folder HTTP/1.1
-translate: f
 ```
 
 ```http

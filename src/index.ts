@@ -33,7 +33,7 @@ async function handleRequest(request: Request) {
     } else if (method === 'COPY') {
 
     } else if (method === 'MOVE')
-        response = await move(path, request.headers.get('Destination') || '');
+        response = await move(path, request.headers.get('Destination'));
     else if (method === 'LOCK')
         response = await lock(path);
     else if (method === 'UNLOCK')

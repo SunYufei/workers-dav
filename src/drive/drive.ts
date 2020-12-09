@@ -1,25 +1,22 @@
-import {client_id, client_secret, grant_type, refresh_token, root} from './config.json';
+import {client_id, client_secret, grant_type, refresh_token, root} from "./config.json";
+import {pathJoin, pathParts} from "./path";
 
-function enQuery(data: { [key: string]: string }): string {
+function encodeQuery(data: { [key: string]: string }): string {
     const ret = [];
     for (const key in data) {
-        ret.push(`${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`);
+        ret.push(`${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
     }
     return ret.join('&');
-}
-
-function trimSlash(path: string): string {
-    return path.replace(/^\/+|\/+$/g, '');
 }
 
 export default class GoogleDrive {
     // accessToken and expires
     private accessToken = null;
-    private expires = Date.now();
+    private expires = Date.now() - 1;
     // URIs
-    private fileURI = 'https://www.googleapis.com/drive/v3/files';
-    private uploadURI = 'https://www.googleapis.com/upload/drive/v3/files';
-    private oAuthURI = 'https://www.googleapis.com/oauth2/v4/token';
+    private fileURI = 'https://p.ipear.ml/www.googleapis.com/drive/v3/files';
+    private uploadURI = 'https://p.ipear.ml/www.googleapis.com/upload/drive/v3/files';
+    private oAuthURI = 'https://p.ipear.ml/www.googleapis.com/oauth2/v4/token';
     // infoCache
     private infoCache: { [path: string]: { id: string, size: string, mimeType: string } } = {
         '/': {id: root, size: '0', mimeType: 'application/vnd.google-apps.folder'}
@@ -54,37 +51,39 @@ export default class GoogleDrive {
      * @param path
      * @public
      */
-    public async itemInfo(path: string) {
+    public async itemInfo(path: string): Promise<{ id: string; size: string; mimeType: string } | null> {
         // get info of each part of path
         let parent = '/';
         let id = this.infoCache[parent].id;
-        // get id of each part of path
-        for (let name of trimSlash(path).split('/')) {
-            name = decodeURIComponent(name).replace(/'/g, "\\'");
-            const next = `${parent}/${name}`;
-            if (this.infoCache[next] === undefined) {
+
+        for (let name of pathParts(path)) {
+            name = decodeURIComponent(name.replace(/'/g, "\\'"));
+            const next = pathJoin(parent, name);
+            if (this.infoCache[next] == undefined) {
                 const params = {
                     'supportsAllDrives': 'true',
                     'includeItemsFromAllDrives': 'true',
                     'q': `'${id}' in parents and trashed=false`,
                     'fields': 'files(id, name, mimeType, size)'
                 };
-                const url = `${this.fileURI}?${enQuery(params)}`;
+                const url = `${this.fileURI}?${encodeQuery(params)}`;
                 const requestOption = {
                     method: 'GET',
                     headers: await this.authHeader()
                 }
                 const response = await fetch(url, requestOption);
                 const data = await response.json();
-                if (data.files.length !== 0) {
-                    for (const f of data.files) {
-                        this.infoCache[`${parent}/${f['name']}`] = {
-                            id: f['id'], size: f['size'], mimeType: f['mimeType']
+                if (data.files.length != 0) {
+                    for (const file of data.files) {
+                        this.infoCache[pathJoin(parent, file['name'])] = {
+                            id: file['id'],
+                            size: file['size'],
+                            mimeType: file['mimeType']
                         }
-                        if (this.listCache[parent] === undefined) {
+                        if (this.listCache[parent] == undefined) {
                             this.listCache[parent] = [];
                         }
-                        this.listCache[parent].push(f['name']);
+                        this.listCache[parent].push(file['name']);
                     }
                 } else {
                     console.log('itemInfo', `get info of ${next} failed`);
@@ -92,20 +91,21 @@ export default class GoogleDrive {
                 }
             }
             // get next part of path
-            id = this.infoCache[next].id;
+            const nextInfo = this.infoCache[next];
+            id = nextInfo != undefined ? nextInfo.id : '';
             parent = next;
         }
-        return this.infoCache[path];
+        return this.infoCache[path] || null;
     }
 
     public async mkdir(path: string): Promise<boolean> {
-        if (await this.itemInfo(path) == null) {
+        if (await this.itemInfo(path) == undefined) {
             let parent = '/';
             let id = this.infoCache[parent].id;
-            for (let name of trimSlash(path).split('/')) {
+            for (let name of pathParts(path)) {
                 name = decodeURIComponent(name).replace(/'/g, "\\'");
                 const next = `${parent}/${name}`;
-                if (this.infoCache[next] === undefined) {
+                if (this.infoCache[next] == undefined) {
                     const body = {
                         'name': name,
                         'mimeType': 'application/vnd.google-apps.folder',
@@ -147,6 +147,10 @@ export default class GoogleDrive {
             return false;
     }
 
+    /**
+     * authorization header
+     * @private
+     */
     private async authHeader(): Promise<{ [header: string]: string }> {
         return {
             'Authorization': `Bearer ${await this.getAccessToken()}`,
@@ -155,7 +159,7 @@ export default class GoogleDrive {
     }
 
     /**
-     * get or update access token
+     * get access token
      * @private
      */
     private async getAccessToken(): Promise<string | null> {
@@ -171,16 +175,16 @@ export default class GoogleDrive {
             const requestOption = {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: enQuery(body)
+                body: encodeQuery(body)
             };
             const response = await fetch(this.oAuthURI, requestOption);
             const data = await response.json();
-            console.log(data);
+            // console.log(data);
             // update access token
-            if (data['access_token'] !== undefined) {
+            if (data['access_token'] != undefined) {
                 console.log('getAccessToken', 'successful');
                 this.accessToken = data['access_token'];
-                this.expires = new Date(Date.now() + parseInt(data['expires_in']) * 1000).getMilliseconds();
+                this.expires = new Date(Date.now() + parseInt(data['expires_in']) * 1000).getTime();
             }
         }
         return this.accessToken;
