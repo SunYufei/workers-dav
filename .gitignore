@@ -1,0 +1,8 @@
+.idea/
+.vscode/
+dist/
+node_modules/
+worker/
+config.json
+package-lock.json
+wrangler.toml
