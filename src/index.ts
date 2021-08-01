@@ -1,3 +1,5 @@
+import { options } from './handler';
+
 addEventListener('fetch', event => {
     event.respondWith(handleRequest(event.request))
 })
@@ -8,7 +10,10 @@ async function handleRequest(request: Request) {
     const method = request.method;
 
     // default response: 405 method not allowed
-    let response = new Response(null, {status: 405});
+    let response = new Response(null, { status: 405 });
+
+    if (method === 'OPTIONS')
+        response = await options();
 
     // CORS config
     response = new Response(response.body, response);
