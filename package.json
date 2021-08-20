@@ -6,10 +6,14 @@
   "description": "WebDAV supports for Google Drive using Cloudflare Workers",
   "devDependencies": {
     "@cloudflare/workers-types": "^2.2.2",
+    "@types/jest": "^27.0.1",
     "@types/node": "^16.6.2",
+    "jest": "^27.0.6",
+    "ts-jest": "^27.0.5",
     "ts-loader": "8.x",
+    "ts-node": "^10.2.1",
     "typescript": "^4.3.5",
-    "webpack": "^5.50.0"
+    "webpack": "^5.51.1"
   },
   "homepage": "https://github.com/SunYufei/workers-dav#readme",
   "license": "MIT",
@@ -21,8 +25,9 @@
   },
   "scripts": {
     "build": "wrangler build",
-    "test": "wrangler preview --watch",
-    "publish": "wrangler publish"
+    "preview": "wrangler preview --watch",
+    "publish": "wrangler publish",
+    "test": "jest"
   },
   "version": "0.1.0"
 }
