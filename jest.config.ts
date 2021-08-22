@@ -19,8 +19,8 @@ const config: Config.InitialOptions = {
     ],
     testPathIgnorePatterns: [
         "/node_modules/",
-        "dist",
-        "worker"
+        "/dist/",
+        "/worker/"
     ]
 }
 

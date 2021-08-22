@@ -2,7 +2,7 @@ name = "video"
 type = "webpack"
 account_id = ""
 workers_dev = true
-webpack_config = "webpack.config.js"
+webpack_config = "webpack.config.ts"
 kv_namespaces = [
     { binding = "KV", id = "" }
 ]
