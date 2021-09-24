@@ -6,7 +6,7 @@ module.exports = {
     output: {
         path: path.join(__dirname, 'dist')
     },
-    mode,
+    mode: mode,
     resolve: {
         extensions: ['.ts', '.js'],
         plugins: []
