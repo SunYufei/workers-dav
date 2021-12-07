@@ -1,3 +1,4 @@
+.DS_Store
 .idea/
 .vscode/
 dist/
@@ -6,3 +7,4 @@ worker/
 config.json
 package-lock.json
 wrangler.toml
+yarn.lock

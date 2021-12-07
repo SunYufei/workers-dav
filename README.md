@@ -5,23 +5,29 @@
 
 ----
 
-## 开发与部署
+## 配置与部署
 
 ### 参数配置
 
 #### Cloudflare Workers
 
-1. 安装 wrangler
-   ```shell
+1. 安装并配置 wrangler
+   ```bash
    npm i @cloudflare/wrangler -g
+   # yarn global add @cloudflare/wrangler
    ```
-2. 将项目根目录下 wrangler.default.toml 文件复制为 wrangler.toml
-3. 访问 [https://dash.cloudflare.com/](https://dash.cloudflare.com/) ，将账户 ID 填入 account_id 字段中
+   访问 [https://dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) 新建 API 令牌，使用“编辑 Cloudflare Workers”模板，勾选`Workers 脚本`、`Workers KV 存储`、`Workers 路由`的编辑权限。新建完毕后投放此令牌。
+
+   运行 `wrangler config` 填入刚才生成的令牌。
+
+2. 将项目根目录下 `wrangler.default.toml` 文件复制为 `wrangler.toml`。访问 [https://dash.cloudflare.com/](https://dash.cloudflare.com/) ，将账户 ID 填入 account_id 字段中
+
 4. 在根目录运行
-   ```shell
+   ```bash
    wrangler kv:namespace create "KV"
    ```
-   创建 KV 空间，并将其 id 填入文件中。第一次运行可能会提示配置 Cloudflare API Token
+   创建 KV 空间，并将输出中的 id 填入 `wrangler.toml` 文件中
+   > 本项目使用 Cloudflare KV 存储部分少量写入大量读取的参数，减少请求次数
    
 #### Google Drive
 
@@ -64,7 +70,7 @@
    }
    ```
 
-4. 将 src/drive/config.default.json 复制为 config.json，填入如下参数
+4. 将 `src/drive` 目录下的 `config.default.json` 复制为 `config.json`，填入如下参数
 
    - client_id
    - client_secret
@@ -90,6 +96,7 @@
 4. RFC 4918 (WebDAV revision) [原文](http://www.webdav.org/specs/rfc4918.html)
    , [中文文档](https://fullstackplayer.github.io/WebDAV-RFC4918-CN/)
 5. [WebDAV Methods | Microsoft Docs](https://docs.microsoft.com/en-us/previous-versions/office/developer/exchange-server-2003/aa142917(v=exchg.65))
+<!--4. [OneDrive 开发人员平台](https://docs.microsoft.com/zh-cn/onedrive/developer/?view=odsp-graph-online)-->
 
 ## 许可
 

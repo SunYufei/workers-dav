@@ -17,7 +17,11 @@ export default class XMLBuilder {
         return el;
     }
 
-    toString(): string {
+    add(element: XMLBuilder): void {
+        this.elements.push(element)
+    }
+
+    build(): string {
         const xml = [];
         xml.push(`<?xml version="1.0" encoding="utf-8"?>`);
         xml.push(this.writeElement(this));

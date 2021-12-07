@@ -10,5 +10,6 @@ test('xml', () => {
     prop.elem('D:getlastmodified', {}, 'Thu, ')
     const resourcetype = prop.elem('D:resourcetype');
     resourcetype.elem('D:collection');
-    console.log(builder.toString());
+    
+    expect(builder.build()).toContain('</D:multistatus>');
 })

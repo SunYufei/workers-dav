@@ -11,9 +11,10 @@
     "strict": true,
     "preserveConstEnums": true,
     "moduleResolution": "node",
-    "sourceMap": true,
-    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "removeComments": true,
     "resolveJsonModule": true,
+    "sourceMap": true,
     "types": [
       "@cloudflare/workers-types",
       "@types/node",
@@ -21,7 +22,7 @@
     ]
   },
   "include": [
-    "./src/*.ts",
+    "./src/**/*.ts",
     "./node_modules/@cloudflare/workers-types/index.d.ts"
   ],
   "exclude": [
