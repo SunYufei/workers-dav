@@ -8,7 +8,7 @@
 
 
 ```http
-Options http://a.net/ HTTP/1.1
+OPTIONS http://a.net/ HTTP/1.1
 ```
 
 ```http
@@ -24,6 +24,44 @@ HTTP/1.1 200 OK
 Allow: OPTIONS, PROPFIND, PROPPATCH, MKCOL, GET, HEAD, POST, DELETE, PUT, COPY, MOVE, LOCK, UNLOCK
 DAV: 1, 2
 ```
+
+## DELETE 
+
+销毁资源或集合
+
+对于文件
+
+```http
+DELETE https://a.net/folder/file1.txt HTTP/1.1
+```
+
+```http
+HTTP/1.1 204 No Content
+```
+
+对于目录，若目录中的某项内容被锁定，则需要返回 207 Multi Status
+
+
+```http
+DELETE /folder/ HTTP/1.1
+```
+
+```http
+HTTP/1.1 207 Multi-Status
+Content-Type: application/xml; charset=UTF-8
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<d:multistatus xmlns:d="DAV:">
+	<d:response>
+		<d:href>http://a.net/container/file1.txt</d:href>
+		<d:status>HTTP/1.1 423 Locked</d:status>
+		<d:error><d:lock-token-submitted/></d:error>
+	</d:response>
+</d:multistatus>
+```
+
+在成功的删除操作后，对目标的后续 URI 请求 GET / HEAD / PROPFIND 请求必须返回 404 Not Found
+
 
 ----
 
@@ -230,42 +268,6 @@ HEAD http://a.net/DAVTest/file1.txt HTTP/1.1
 HTTP/1.1 200 OK
 ```
 
-## DELETE 
-
-销毁资源或集合
-
-对于文件
-
-```http
-DELETE https://a.net/folder/file1.txt HTTP/1.1
-```
-
-```http
-HTTP/1.1 204 No Content
-```
-
-对于目录，若目录中的某项内容被锁定，则需要返回 207 Multi Status
-
-
-```http
-DELETE /folder/ HTTP/1.1
-```
-
-```http
-HTTP/1.1 207 Multi-Status
-Content-Type: application/xml; charset=UTF-8
-
-<?xml version="1.0" encoding="UTF-8" ?>
-<d:multistatus xmlns:d="DAV:">
-	<d:response>
-		<d:href>http://a.net/container/file1.txt</d:href>
-		<d:status>HTTP/1.1 423 Locked</d:status>
-		<d:error><d:lock-token-submitted/></d:error>
-	</d:response>
-</d:multistatus>
-```
-
-在成功的删除操作后，对目标的后续 URI 请求 GET / HEAD / PROPFIND 请求必须返回 404 Not Found
 
 ## PUT 
 

@@ -27,7 +27,39 @@ token_type: Bearer
 
 ## Files API
 
-[原链接](https://developers.google.cn/drive/api/v3/about-files)
+### Files: delete
+
+永久删除文件
+
+**HTTP 请求**
+
+```http request
+DELETE https://www.googleapis.com/drive/v3/files/{fileId}
+Authorization: Bearer {AccessToken}
+Content-Type: application/json
+```
+
+**请求参数**
+
+|参数名称|类型|说明|
+|:---|:---|:---|
+|路径参数|||
+|fileId|string|文件 ID|
+|查询参数|||
+|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false）|
+
+**请求正文**
+
+无
+
+**响应**
+
+如果请求成功，返回空的响应正文
+
+
+
+
+---
 
 ### 文件类型
 
@@ -257,31 +289,6 @@ Content-Type: application/json
 
 若请求成功，响应正文中返回文件 metadata
 
-### Files: delete
-
-永久删除文件
-
-**HTTP 请求**
-
-```http request
-DELETE https://www.googleapis.com/drive/v3/files/{fileId}
-Authorization: Bearer {AccessToken}
-Content-Type: application/json
-```
-
-**请求参数**
-
-|参数名称|类型|说明|
-|:---|:---|:---|
-|supportsAllDrives|boolean|请求的应用程序是否同时支持我的驱动器和共享驱动器。（默认：false）|
-
-**请求正文**
-
-无
-
-**响应**
-
-如果请求成功，返回空的响应正文
 
 ### Files: emptyTrash
 
