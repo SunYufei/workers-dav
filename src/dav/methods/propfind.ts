@@ -46,6 +46,8 @@ export async function propfind(properties: ItemProperty[]) {
         builder.add(buildResponse(item));
     return new Response(builder.build(), {
         status: HTTPCode.MultiStatus,
-        headers: { 'Content-Type': 'application/xml; charset=utf-8' }
+        headers: {
+            'Content-Type': 'application/xml; charset=utf-8'
+        }
     })
 }

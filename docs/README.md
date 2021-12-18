@@ -11,7 +11,7 @@
 |COPY<br>复制文件/目录||||
 |MOVE<br>移动/重命名文件/目录|move(src, dest)|||
 |PUT<br>修改文件内容|/|/|/|
-|DELETE<br>删除文件/目录|trash(path)|trash(success)|trash(path)|
+|[DELETE](WebDAV.md#DELETE)<br>删除文件/目录|trash(path)|trash(success)|trash(path)|
 |LOCK<br>锁定文件|/|/|/|
 |UNLOCK<br>解锁文件|/|/|/|
 

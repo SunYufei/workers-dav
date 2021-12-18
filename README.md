@@ -11,12 +11,11 @@
 
 #### Cloudflare Workers
 
-1. 安装并配置 wrangler
+1. 安装并配置 wrangler（Apple M1 需要安装 Rosetta2）
    ```bash
    npm i @cloudflare/wrangler -g
-   # yarn global add @cloudflare/wrangler
    ```
-   访问 [https://dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) 新建 API 令牌，使用“编辑 Cloudflare Workers”模板，勾选`Workers 脚本`、`Workers KV 存储`、`Workers 路由`的编辑权限。新建完毕后投放此令牌。
+   访问 [https://dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) 新建 API 令牌，使用“编辑 Cloudflare Workers”模板，勾选 `Workers 脚本`、`Workers KV 存储`、`Workers 路由` 的编辑权限。新建完毕后投放此令牌。
 
    运行 `wrangler config` 填入刚才生成的令牌。
 
@@ -79,8 +78,12 @@
 
 ### 部署
 
-在项目根目录执行 `wrangler publish` 即可
+在项目根目录执行 
 
+```shell
+npm install
+wrangler publish
+```
 
 ## 文档
 

@@ -1,4 +1,4 @@
-import type {Config} from '@jest/types';
+import type { Config } from '@jest/types';
 
 const config: Config.InitialOptions = {
     moduleFileExtensions: [
@@ -21,7 +21,8 @@ const config: Config.InitialOptions = {
         "/node_modules/",
         "/dist/",
         "/worker/"
-    ]
+    ],
+    testTimeout: 30000
 }
 
 export default config;
