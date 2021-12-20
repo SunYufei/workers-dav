@@ -1,34 +1,41 @@
 {
-  "author": "SunYufei",
-  "bugs": {
-    "url": "https://github.com/SunYufei/workers-dav/issues"
-  },
-  "description": "WebDAV supports for Google Drive using Cloudflare Workers",
-  "devDependencies": {
-    "@cloudflare/workers-types": "3.x",
-    "@types/jest": "27.x",
-    "@types/node": "16.x",
-    "isomorphic-fetch": "3.x",
-    "jest": "27.x",
-    "ts-jest": "27.x",
-    "ts-loader": "8.x",
-    "ts-node": "10.x",
-    "typescript": "4.x",
-    "webpack": "5.x"
-  },
-  "homepage": "https://github.com/SunYufei/workers-dav#readme",
-  "license": "MIT",
-  "main": "./dist/worker.js",
-  "name": "workers-dav",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SunYufei/workers-dav.git"
-  },
-  "scripts": {
-    "build": "wrangler build",
-    "preview": "wrangler preview --watch",
-    "publish": "wrangler publish",
-    "test": "jest"
-  },
-  "version": "0.1.0"
+   "author": "SunYufei",
+   "description": "WebDAV supports for Google Drive using Cloudflare Workers",
+   "devDependencies": {
+      "@cloudflare/workers-types": "3.x",
+      "@types/jest": "27.x",
+      "jest": "27.x",
+      "miniflare": "1.x",
+      "prettier": "2.x",
+      "ts-jest": "27.x",
+      "ts-loader": "8.x",
+      "typescript": "4.x",
+      "webpack": "5.x",
+      "webpack-cli": "4.x"
+   },
+   "homepage": "https://github.com/SunYufei/workers-dav#readme",
+   "license": "MIT",
+   "main": "dist/worker.js",
+   "name": "workers-dav",
+   "prettier": {
+      "printWidth": 80,
+      "quoteProps": "preserve",
+      "semi": false,
+      "singleQuote": true,
+      "tabWidth": 3,
+      "trailingComma": "all",
+      "useTabs": false
+   },
+   "repository": {
+      "type": "git",
+      "url": "git+https://github.com/SunYufei/workers-dav.git"
+   },
+   "scripts": {
+      "build": "wrangler build",
+      "format": "prettier --write  '*.{json,js}' 'src/**/*.{json,js,ts}' 'test/**/*.{js,ts}'",
+      "dev": "miniflare dist/worker.js --watch",
+      "publish": "wrangler publish",
+      "test": "jest"
+   },
+   "version": "0.1.0"
 }

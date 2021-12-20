@@ -1,35 +1,18 @@
-import Path from '../../src/drive/path';
-
-
-test('Path.resolve', () => {
-    expect(Path.resolve(''))
-        .toStrictEqual('/')
-    expect(Path.resolve('/'))
-        .toStrictEqual('/')
-    expect(Path.resolve("/name'/"))
-        .toStrictEqual("/name\\'")
-    expect(Path.resolve("/'"))
-        .toStrictEqual("/\\'")
-    expect(Path.resolve('/parent/name/'))
-        .toStrictEqual('/parent/name')
-})
+import PathUtil from '../../src/drive/path'
 
 test('Path.getParent', () => {
-    expect(Path.getParent('/'))
-        .toStrictEqual('/')
-    expect(Path.getParent('/parent/'))
-        .toStrictEqual('/')
-    expect(Path.getParent('/parent/name/'))
-        .toStrictEqual('/parent')
-    expect(Path.getParent("/parent'/name"))
-        .toStrictEqual("/parent\\'")
+   expect(PathUtil.getParent('/')).toStrictEqual('/')
+   expect(PathUtil.getParent('/parent/')).toStrictEqual('/')
+   expect(PathUtil.getParent('/parent/name/')).toStrictEqual('/parent')
+   expect(PathUtil.getParent("/parent'/name")).toStrictEqual("/parent\\'")
 })
 
 test('Path.getName', () => {
-    expect(Path.getName('/'))
-        .toStrictEqual('')
-    expect(Path.getName('/name'))
-        .toStrictEqual('name')
-    expect(Path.getName("/name'/"))
-        .toStrictEqual("name\\'")
+   expect(PathUtil.getName('/')).toStrictEqual('')
+   expect(PathUtil.getName('/name')).toStrictEqual('name')
+   expect(PathUtil.getName("/name'/")).toStrictEqual("name\\'")
+})
+
+test('Path.join', () => {
+   expect(PathUtil.join('', '')).toStrictEqual('/')
 })

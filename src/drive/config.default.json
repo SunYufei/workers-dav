@@ -1,8 +1,8 @@
 {
-  "driveType": "google",
-  "clientId": "",
-  "clientSecret": "",
-  "refreshToken": "",
-  "root": "",
-  "grantType": "refresh_token"
+   "driveType": "google",
+   "clientId": "",
+   "clientSecret": "",
+   "refreshToken": "",
+   "root": "",
+   "grantType": "refresh_token"
 }

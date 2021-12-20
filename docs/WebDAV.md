@@ -6,12 +6,11 @@
 
 > [RFC4918：DAV 兼容级别](https://fullstackplayer.github.io/WebDAV-RFC4918-CN/18-DAV%E5%85%BC%E5%AE%B9%E7%BA%A7%E5%88%AB.html)
 
-
-```http
-OPTIONS http://a.net/ HTTP/1.1
+```http request
+OPTIONS https://a.net/ HTTP/1.1
 ```
 
-```http
+```http request
 HTTP/1.1 200 OK
 Allow: OPTIONS, PROPFIND, PROPPATCH, MLCOL, GET, HEAD, POST, DELETE, PUT, COPY, MOVE
 DAV: 1
@@ -19,41 +18,40 @@ DAV: 1
 
 或
 
-```http
+```http request
 HTTP/1.1 200 OK
 Allow: OPTIONS, PROPFIND, PROPPATCH, MKCOL, GET, HEAD, POST, DELETE, PUT, COPY, MOVE, LOCK, UNLOCK
 DAV: 1, 2
 ```
 
-## DELETE 
+## DELETE
 
 销毁资源或集合
 
 对于文件
 
-```http
-DELETE https://a.net/folder/file1.txt HTTP/1.1
+```http request
+DELETE /folder/file1.txt HTTP/1.1
 ```
 
-```http
+```http request
 HTTP/1.1 204 No Content
 ```
 
-对于目录，若目录中的某项内容被锁定，则需要返回 207 Multi Status
+对于目录，实行递归删除。若目录中的某项内容被锁定，则需要返回 207 Multi Status（暂未实现）
 
-
-```http
+```http request
 DELETE /folder/ HTTP/1.1
 ```
 
-```http
+```http request
 HTTP/1.1 207 Multi-Status
 Content-Type: application/xml; charset=UTF-8
 
 <?xml version="1.0" encoding="UTF-8" ?>
 <d:multistatus xmlns:d="DAV:">
 	<d:response>
-		<d:href>http://a.net/container/file1.txt</d:href>
+		<d:href>https://a.net/container/file1.txt</d:href>
 		<d:status>HTTP/1.1 423 Locked</d:status>
 		<d:error><d:lock-token-submitted/></d:error>
 	</d:response>
@@ -62,35 +60,34 @@ Content-Type: application/xml; charset=UTF-8
 
 在成功的删除操作后，对目标的后续 URI 请求 GET / HEAD / PROPFIND 请求必须返回 404 Not Found
 
-
-----
-
 ## MKCOL
 
 在 Request-URI 指定的位置创建一个新的集合
 
-```http
-MKCOL http://a.net/folder HTTP/1.1
+```http request
+MKCOL /folder HTTP/1.1
 ```
 
-```http
+```http request
 HTTP/1.1 201 Created
 ```
 
-|状态码|解释|
-|:---:|:---|
-|201|成功创建集合|
-|403|1) 服务器不允许在指定位置创建集合<br>2) 父集合存在但不能接受成员|
-|405<sup>1</sup>|MKCOL 只能在未映射的 URL 上执行|
-|409<sup>1</sup>|在创建一个或多个中间层级的集合之前，无法在Request-URI上进行创建集合。服务器不得自动创建这些中间层级的集合|
-|415<sup>1</sup>|服务器不支持请求body的类型（尽管body在MKCOL请求中是合法的，因为此规范未定义任何主体，因此服务器可能不支持任何给定的body类型）|
-|507<sup>2</sup>|执行此方法后，资源没有足够的空间来记录资源的状态|
+|     状态码      | 解释                                                                                                                                  |
+| :-------------: | :------------------------------------------------------------------------------------------------------------------------------------ |
+|       201       | 成功创建集合                                                                                                                          |
+|       403       | 1) 服务器不允许在指定位置创建集合<br>2) 父集合存在但不能接受成员                                                                      |
+| 405<sup>1</sup> | MKCOL 只能在未映射的 URL 上执行                                                                                                       |
+| 409<sup>1</sup> | 在创建一个或多个中间层级的集合之前，无法在 Request-URI 上进行创建集合。服务器不得自动创建这些中间层级的集合                           |
+| 415<sup>1</sup> | 服务器不支持请求 body 的类型（尽管 body 在 MKCOL 请求中是合法的，因为此规范未定义任何主体，因此服务器可能不支持任何给定的 body 类型） |
+| 507<sup>2</sup> | 执行此方法后，资源没有足够的空间来记录资源的状态                                                                                      |
 
 [1] 由于客户端具有可靠性，不考虑实现此状态码
 
 [2] 暂未实现
 
-## PROPFIND 
+---
+
+## PROPFIND
 
 获取资源属性、目录层次结构
 
@@ -102,17 +99,17 @@ HTTP/1.1 201 Created
 
 ### Depth: 0
 
-```http
-PROPFIND http://a.net/DAVTest/file1.txt HTTP/1.1
+```http request
+PROPFIND /DAVTest/file1.txt HTTP/1.1
 Depth: 0
 ```
 
-```http
+```http request
 HTTP/1.1 207 Multi-Status
 Content-Type: text/xml; charset=UTF-8
 
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<d:multistatus xmlns:d="DAV:" xmlns:s="http://a.net">
+<d:multistatus xmlns:d="DAV:">
 	<d:response>
 		<d:href>/DAVTest/file1.txt</d:href>
 		<d:propstat>
@@ -132,12 +129,12 @@ Content-Type: text/xml; charset=UTF-8
 
 ### Depth: 1
 
-```http
-PROPFIND http://a.net/DAVTest HTTP/1.1
+```http request
+PROPFIND /DAVTest HTTP/1.1
 Depth: 1
 ```
 
-```http
+```http request
 HTTP/1.1 207 Multi-Status
 Content-Type: text/xml; charset=UTF-8
 
@@ -202,7 +199,7 @@ Content-Type: text/xml; charset=UTF-8
 </d:multistatus>
 ```
 
-## PROPPATCH 
+## PROPPATCH
 
 更改和删除资源属性
 
@@ -242,34 +239,31 @@ Content-Type: text/xml; charset=UTF-8
 </d:multistatus>
 ```
 
-
-
-## GET 
+## GET
 
 获取资源
 
-```http
-GET http://a.net/DAVTest/file1.txt HTTP/1.1
+```http request
+GET /DAVTest/file1.txt HTTP/1.1
 ```
 
-```http
+```http request
 HTTP/1.1 200 OK
 ```
 
-## HEAD 
+## HEAD
 
 检查资源是否存在，得到资源元数据
 
-```http
-HEAD http://a.net/DAVTest/file1.txt HTTP/1.1
+```http request
+HEAD /DAVTest/file1.txt HTTP/1.1
 ```
 
-```http
+```http request
 HTTP/1.1 200 OK
 ```
 
-
-## PUT 
+## PUT
 
 修改资源
 
@@ -284,31 +278,31 @@ HTTP/1.1 204 No Content
 X-File-Version: 2
 ```
 
-## COPY 
+## COPY
 
 资源复制
 
-## MOVE 
+## MOVE
 
 资源移动或重命名
 
-```http
-MOVE http://a.net/src HTTP/1.1
-Destination: http://a.net/dest
+```http request
+MOVE /src HTTP/1.1
+Destination: /dest
 Overwrite: F
 translate: f
 ```
 
-```http
+```http request
 HTTP/1.1 201 Created
 ```
 
-## LOCK 
+## LOCK
 
 锁定资源
 
-```http
-LOCK http://a.net/DAVTest/file1.txt HTTP/1.1
+```http request
+LOCK /DAVTest/file1.txt HTTP/1.1
 Content-Type: text/xml; charset=utf-8
 
 <?xml version="1.0" encoding="utf-8" ?>
@@ -321,7 +315,7 @@ Content-Type: text/xml; charset=utf-8
 </D:lockinfo>
 ```
 
-```http
+```http request
 HTTP/1.1 200 OK
 Content-Type: text/xml; charset=UTF-8
 Lock-Token: opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce
@@ -343,15 +337,15 @@ Lock-Token: opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce
 </d:prop>
 ```
 
-## UNLOCK 
+## UNLOCK
 
 解除资源锁定
 
-```http
-UNLOCK http://a.net/DAVTest/file1.txt HTTP/1.1
+```http request
+UNLOCK /DAVTest/file1.txt HTTP/1.1
 Lock-Token: <opaquelocktoken:46cafbd3-d674-46ee-9856-3bb566ec35ce>
 ```
 
-```http
+```http request
 HTTP/1.1 204 No Content
 ```

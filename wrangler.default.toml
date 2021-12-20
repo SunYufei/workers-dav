@@ -1,8 +1,16 @@
-name = "video"
+name = "workers-dav"
 type = "webpack"
-account_id = ""
 workers_dev = true
-webpack_config = "webpack.config.ts"
+compatibility_date = "2021-12-19"
+webpack_config = "webpack.config.js"
+
+account_id = ""
+zone_id = ""
 kv_namespaces = [
     { binding = "KV", id = "" }
 ]
+
+[build]
+command = "webpack"
+[build.upload]
+format = "service-worker"

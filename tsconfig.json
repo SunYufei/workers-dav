@@ -1,33 +1,18 @@
 {
-  "compilerOptions": {
-    "outDir": "./dist",
-    "module": "CommonJS",
-    "target": "ES6",
-    "lib": [
-      "ES6",
-      "WebWorker"
-    ],
-    "alwaysStrict": true,
-    "strict": true,
-    "preserveConstEnums": true,
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "removeComments": true,
-    "resolveJsonModule": true,
-    "sourceMap": true,
-    "types": [
-      "@cloudflare/workers-types",
-      "@types/node",
-      "@types/jest"
-    ]
-  },
-  "include": [
-    "./src/**/*.ts",
-    "./node_modules/@cloudflare/workers-types/index.d.ts"
-  ],
-  "exclude": [
-    "node_modules/",
-    "dist/",
-    "worker/"
-  ]
+   "compilerOptions": {
+      "module": "CommonJS",
+      "target": "ESNext",
+      "lib": ["ESNext"],
+      "alwaysStrict": true,
+      "strict": true,
+      "preserveConstEnums": true,
+      "moduleResolution": "Node",
+      "esModuleInterop": true,
+      "noImplicitAny": true,
+      "removeComments": true,
+      "resolveJsonModule": true,
+      "types": ["@cloudflare/workers-types", "@types/jest"]
+   },
+   "include": ["src"],
+   "exclude": ["node_modules", "test", "dist", "worker"]
 }

@@ -1,9 +1,7 @@
-import HTTPCode from '../../common/code';
+import { HTTPCode } from '../../common/http'
 
-export async function trash(success: boolean) {
-    return new Response(null, {
-        status: success ?
-            HTTPCode.NoContent :
-            HTTPCode.InternalServerError
-    });
+export default function trash(success: boolean) {
+   return new Response(null, {
+      status: success ? HTTPCode.NoContent : HTTPCode.InternalServerError,
+   })
 }

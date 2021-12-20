@@ -1,4 +1,11 @@
-export * from './methods/delete';
-export * from './methods/mkcol';
-export * from './methods/options';
-export * from './methods/propfind';
+import mkcol from './methods/mkcol'
+import options from './methods/options'
+import propfind from './methods/propfind'
+import trash from './methods/delete'
+
+export default {
+   mkcol,
+   options,
+   propfind,
+   trash,
+}

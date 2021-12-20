@@ -1,9 +1,7 @@
-import HTTPCode from '../../common/code';
+import { HTTPCode } from '../../common/http'
 
-export async function mkcol(success: boolean) {
-    return new Response(null, {
-        status: success ?
-            HTTPCode.Created :
-            HTTPCode.Forbidden
-    });
+export default function mkcol(success: boolean) {
+   return new Response(null, {
+      status: success ? HTTPCode.Created : HTTPCode.Forbidden,
+   })
 }
