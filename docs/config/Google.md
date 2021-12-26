@@ -45,6 +45,6 @@ code={authorization_code}&client_id={client_id}&client_secret={client_secret}&re
 - client_id
 - client_secret
 - refresh_token
-- root **（不使用 Google Team Drive 无需修改此项）**
+- root **（不使用 Google Team Drive 或不指定挂载文件夹无需修改此项）**
 
   网页访问 Google Drive，进入需要挂载的文件夹，填入地址栏 `https://drive.google.com/drive/folders/xxxxxx` 中的 `xxxxxx` 信息

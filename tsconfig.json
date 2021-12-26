@@ -1,8 +1,8 @@
 {
    "compilerOptions": {
       "module": "CommonJS",
-      "target": "ESNext",
-      "lib": ["ESNext"],
+      "target": "ES6",
+      "lib": ["ES6"],
       "alwaysStrict": true,
       "strict": true,
       "preserveConstEnums": true,
