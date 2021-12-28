@@ -85,8 +85,6 @@ HTTP/1.1 201 Created
 
 [2] 暂未实现
 
----
-
 ## PROPFIND
 
 获取资源属性、目录层次结构
@@ -199,12 +197,14 @@ Content-Type: text/xml; charset=UTF-8
 </d:multistatus>
 ```
 
+---
+
 ## PROPPATCH
 
 更改和删除资源属性
 
-```http
-PROPPATCH https://dav.jianguoyun.com/dav/Cloud/DAVTest/file1.txt HTTP/1.1
+```http request
+PROPPATCH dav.jianguoyun.com/dav/Cloud/DAVTest/file1.txt HTTP/1.1
 Content-Type: text/xml; charset=UTF-8
 
 <?xml version="1.0" encoding="utf-8" ?>
@@ -218,7 +218,7 @@ Content-Type: text/xml; charset=UTF-8
 </D:propertyupdate>
 ```
 
-```http
+```http request
 HTTP/1.1 207 Multi-Status
 Content-Type: text/xml; charset=UTF-8
 
@@ -267,13 +267,13 @@ HTTP/1.1 200 OK
 
 修改资源
 
-```http
+```http request
 PUT http://a.net/DAVTest/file1.txt HTTP/1.1
 
 content in file1.txt
 ```
 
-```http
+```http request
 HTTP/1.1 204 No Content
 X-File-Version: 2
 ```

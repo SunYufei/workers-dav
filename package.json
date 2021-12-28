@@ -5,7 +5,6 @@
       "@cloudflare/workers-types": "3.x",
       "@types/jest": "27.x",
       "jest": "27.x",
-      "miniflare": "1.x",
       "prettier": "2.x",
       "ts-jest": "27.x",
       "ts-loader": "8.x",
@@ -23,7 +22,7 @@
       "semi": false,
       "singleQuote": true,
       "tabWidth": 3,
-      "trailingComma": "all",
+      "trailingComma": "es5",
       "useTabs": false
    },
    "repository": {

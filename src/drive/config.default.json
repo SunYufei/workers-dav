@@ -3,6 +3,6 @@
    "clientId": "",
    "clientSecret": "",
    "refreshToken": "",
-   "root": "",
+   "root": "root",
    "grantType": "refresh_token"
 }

@@ -9,7 +9,7 @@
 
 ## 配置与部署
 
-[安装 Wrangler CLI](https://github.com/cloudflare/wrangler#installation)（Apple M1 需要安装 Rosetta2）
+[安装 Wrangler CLI](https://github.com/cloudflare/wrangler#installation) （Apple M1 需要安装 Rosetta2）
 
 ```sh
 npm i -g @cloudflare/wrangler
@@ -29,7 +29,7 @@ npm install
 ```
 
 配置项目属性
-    
+
 - [Cloudflare Workers](docs/config/Cloudflare.md)
 - [Google Drive](docs/config/Google.md)
 
@@ -51,8 +51,10 @@ wrangler publish
 1. [CloudFlare Workers KV API](https://developers.cloudflare.com/workers/runtime-apis/kv)
 2. [fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch)
 3. [Google Drive API v3](https://developers.google.com/drive)
-4. RFC 4918 (WebDAV revision) [原文](http://www.webdav.org/specs/rfc4918.html), [中文文档](https://fullstackplayer.github.io/WebDAV-RFC4918-CN/)
-5. [WebDAV Methods | Microsoft Docs](<https://docs.microsoft.com/en-us/previous-versions/office/developer/exchange-server-2003/aa142917(v=exchg.65)>)
+4. RFC 4918 (WebDAV revision) [原文](http://www.webdav.org/specs/rfc4918.html)
+   , [中文文档](https://fullstackplayer.github.io/WebDAV-RFC4918-CN/)
+5. [WebDAV Methods | Microsoft Docs](https://docs.microsoft.com/en-us/previous-versions/office/developer/exchange-server-2003/aa142917(v=exchg.65))
+
 <!--2. [OneDrive 开发人员平台](https://docs.microsoft.com/zh-cn/onedrive/developer/?view=odsp-graph-online)-->
 
 ## 许可

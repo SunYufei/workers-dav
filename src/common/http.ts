@@ -56,3 +56,8 @@ export enum HTTPCode {
    // NotExtended = 510,
    // NetworkAuthenticationRequired = 511,
 }
+
+export const StatusCode: Record<number, string> = {
+   200: 'OK',
+   207: 'Multi-Status'
+}

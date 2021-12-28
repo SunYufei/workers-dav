@@ -1,18 +1,23 @@
-import { clientId, clientSecret, grantType, refreshToken, root } from './config.json'
-import Drive from './drive'
-import ItemProperty from '../common/property'
-import PathUtil from './path'
-import { HTTPCode } from '../common/http'
+import {
+   clientId,
+   clientSecret,
+   grantType,
+   refreshToken,
+   root,
+} from './config.json'
 import encodeQuery from './query'
+import Drive from './drive'
+import { HTTPCode } from '../common/http'
+import ItemProperty from '../common/property'
+import Path from '../common/path'
 
 // URIs
 const FILES_URI = 'https://www.googleapis.com/drive/v3/files'
 const OAUTH_URI = 'https://www.googleapis.com/oauth2/v4/token'
 
-// special MIME type
-const MIME_FOLDER = 'application/vnd.google-apps.folder'
+// Google Drive 特定文件夹 MIME Type
+const GOOGLE_FOLDER = 'application/vnd.google-apps.folder'
 
-// special type
 type RespJson = Record<string, any>
 
 export default class GoogleDrive implements Drive {
@@ -20,98 +25,107 @@ export default class GoogleDrive implements Drive {
    private accessToken: string | null = null
    private expires = 0
 
-   // cache
+   /** property cache: { abs path: property } */
    private propCache: Record<string, ItemProperty> = {
-      '/': {
-         path: '/',
-         id: root,
-         contentLength: 0,
-         contentType: MIME_FOLDER,
-      },
+      '/': { href: '/', id: root },
    }
+   /** list cache: { parent: children[] } */
    private listCache: Record<string, string[]> = {}
 
    /**
     * get or update item property from:
     * 1. local memory
-    * 2. using files:list api
+    * 2. TODO KV
+    * 3. using files:list api
     * @param path
     * @param withChildren
     */
-   async getItemProperty(
-      path: string,
-      withChildren: boolean = false,
-   ): Promise<ItemProperty[]> {
-      const LOG_MSG = 'getItemProperties'
-      console.log(LOG_MSG, path, 'withChildren: ', withChildren)
+   async getItemProps(path: string, withChildren = false) {
+      const LOG_MSG = 'getItemProps'
+      console.log(LOG_MSG, path, 'withChildren:', withChildren)
 
-      const result = []
-
-      // path
-      if (this.propCache[path] == undefined) {
-         const parent = PathUtil.getParent(path)
-         const params = {
-            'supportsAllDrives': 'true',
-            'includeItemsFromAllDrives': 'true',
-            'q': `'${parent}' in parents and trashed=false`,
-            'fields':
-               'files(id, name, mimeType, size, modifiedTime, createdTime',
-         }
-         const url = `${FILES_URI}?${encodeQuery(params)}`
-         const response = await fetch(url, {
-            method: 'GET',
-            headers: await this.getAuthHeaders(),
-         })
-         const data = await response.json<RespJson>()
-         // TODO support multi-page search
-         const files = data['files']
-         if (files != undefined) {
-            for (const file of files) {
-               console.log(file)
+      let current = '/'
+      let id = this.propCache[current].id
+      for (const name of Path.parts(
+         withChildren ? Path.join(path, '.') : path
+      )) {
+         const next = Path.join(current, name)
+         if (!this.propCache[next]) {
+            const params = {
+               'supportsAllDrives': 'true',
+               'includeItemsFromAllDrives': 'true',
+               'q': `'${id}' in parents and trashed=false`,
+               'fields':
+                  'files(id,name,size,mimeType,modifiedTime,createdTime)',
+            }
+            const url = `${FILES_URI}?${encodeQuery(params)}`
+            const response = await fetch(url, {
+               method: 'GET',
+               headers: await this.getAuthHeaders(),
+            })
+            if (response.status != HTTPCode.OK) break
+            const data = await response.json<RespJson>()
+            if (!data['files'] || data['files'].length == 0) break
+            this.listCache[current] = []
+            for (const file of data['files']) {
+               const item = Path.join(current, file['name'])
+               this.listCache[current].push(item)
+               this.propCache[item] = {
+                  href: item,
+                  id: file['id'],
+                  contentLength: file['size'],
+                  contentType: file['mimeType'],
+                  lastModified: file['modifiedTime'],
+                  creationDate: file['createdTime'],
+               }
             }
          }
+         if (!this.propCache[next]) break
+         id = this.propCache[next].id
+         current = next
       }
-      result.push(this.propCache[path])
 
-      // children
-      if (withChildren) {
-         if (this.listCache[path] == undefined) {
-         }
-         for (const name of this.listCache[path])
-            result.push(this.propCache[''])
-      }
-      return result
+      const props = []
+      if (this.propCache[path]) props.push(this.propCache[path])
+      if (withChildren && this.listCache[path])
+         for (const child of this.listCache[path])
+            props.push(this.propCache[child])
+
+      console.log(LOG_MSG, `find ${props.length} items`)
+      return props[0] ? props : null
    }
 
    async fetchFile(path: string, range: string | null, withContent: boolean) {
       const LOG_MSG = 'fetchFile'
       console.log(LOG_MSG, path, 'Range', range, 'withContent', withContent)
 
-      const property = await this.getItemProperty(path, false)
-      if (property.length > 0) {
-         let url = `${FILES_URI}/${property[0].id}?supportsAllDrives=true`
+      const props = await this.getItemProps(path)
+      if (props) {
+         let url = `${FILES_URI}/${props[0].id}?supportsAllDrives=true`
          if (withContent) url = `${url}&alt=media`
          const headers = await this.getAuthHeaders()
          if (range != null) headers['Range'] = range
-         console.log(url, headers)
-         // await fetch(url, {
-         //     method: 'GET',
-         //     headers: headers
-         // })
+         return await fetch(url, {
+            method: 'GET',
+            headers: headers,
+         })
       }
+
       console.log(LOG_MSG, path, 'not found')
-      return new Response()
+      return new Response(null, {
+         status: HTTPCode.NotFound,
+      })
    }
 
    /**
     * mkdir using files:create api
     * @param path
     */
-   async mkdir(path: string): Promise<boolean> {
-      if ((await this.getItemProperty(path)) == undefined) {
+   async mkdir(path: string) {
+      if ((await this.getItemProps(path)) == null) {
          let parent = '/'
-         let id = this.propCache[path].id
-         for (let name of PathUtil.getParts(path)) {
+         let id = this.propCache[parent].id
+         for (let name of Path.parts(path)) {
             name = decodeURIComponent(name)
             const next = `${parent}/${name}`
             if (this.propCache[next] == undefined) {
@@ -119,8 +133,8 @@ export default class GoogleDrive implements Drive {
                   method: 'POST',
                   headers: await this.getAuthHeaders(),
                   body: JSON.stringify({
-                     'name': name.replace(/'/g, '\\\''),
-                     'mimeType': MIME_FOLDER,
+                     'name': name.replace(/'/g, "\\'"),
+                     'mimeType': GOOGLE_FOLDER,
                      'parents': [id],
                   }),
                })
@@ -131,7 +145,6 @@ export default class GoogleDrive implements Drive {
             parent = next
          }
       }
-
       return false
    }
 
@@ -140,16 +153,16 @@ export default class GoogleDrive implements Drive {
     * @param path
     * @returns
     */
-   async trash(path: string): Promise<boolean> {
+   async trash(path: string) {
       const LOG_MSG = 'trash'
       console.log(LOG_MSG, path)
 
-      const property = await this.getItemProperty(path, true)
-      if (property.length == 0) {
+      const props = await this.getItemProps(path, true)
+      if (props == null) {
          console.log(LOG_MSG, path, 'not found')
          return false
       }
-      for (const prop of property) {
+      for (const prop of props) {
          const url = `${FILES_URI}/${prop.id}?supportsAllDrives=true`
          const response = await fetch(url, {
             method: 'DELETE',
@@ -160,16 +173,16 @@ export default class GoogleDrive implements Drive {
             response.headers.get('Content-Length') == '0'
          ) {
             // delete info in propCache
-            delete this.propCache[prop.path]
-            console.log(LOG_MSG, prop.path, 'deleted in propCache')
+            delete this.propCache[prop.href]
+            console.log(LOG_MSG, prop.href, 'deleted in propCache')
             // delete info in listCache
-            const parent = PathUtil.getParent(prop.path)
+            const parent = Path.getParent(prop.href)
             if (this.listCache[parent] != undefined) {
                delete this.listCache[parent]
                console.log(
                   LOG_MSG,
-                  prop.path,
-                  `parent ${parent} deleted in listCache`,
+                  prop.href,
+                  `parent ${parent} deleted in listCache`
                )
             }
          }
@@ -188,7 +201,7 @@ export default class GoogleDrive implements Drive {
     * get or update access token from:
     * 1. local memory
     * 2. KV
-    * 3. Google Drive API
+    * 3. OAuth API
     * @private
     */
    private async getAccessToken(): Promise<string | null> {
@@ -196,11 +209,11 @@ export default class GoogleDrive implements Drive {
       const KV_TOKEN_KEY = 'gd_token'
       const KV_EXPIRES_KEY = 'gd_expires'
 
-      if (this.accessToken == null || this.expires < Date.now()) {
+      if (!this.accessToken || this.expires < Date.now()) {
          console.log(LOG_MSG, 'local token outdated')
          // check KV
          this.accessToken = await KV.get(KV_TOKEN_KEY)
-         if (this.accessToken == null) {
+         if (!this.accessToken) {
             console.log(LOG_MSG, 'KV token outdated')
             // get access token using API
             const response = await fetch(OAUTH_URI, {
@@ -216,7 +229,6 @@ export default class GoogleDrive implements Drive {
                }),
             })
             const data = await response.json<RespJson>()
-            // console.log(LOG_MSG, data);
             // update access token
             const token = data['access_token']
             if (token != undefined) {
@@ -225,7 +237,9 @@ export default class GoogleDrive implements Drive {
                this.accessToken = token
                this.expires = Date.now() + expiresIn * 1000
                // save to KV
-               await KV.put(KV_TOKEN_KEY, token, { expirationTtl: expiresIn })
+               await KV.put(KV_TOKEN_KEY, token, {
+                  expirationTtl: expiresIn,
+               })
                await KV.put(KV_EXPIRES_KEY, this.expires.toString())
             }
          }

@@ -18,7 +18,7 @@ https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/
 
 - 向 `https://oauth2.googleapis.com/token` 发送 POST 请求，注意替换请求体中的相应参数
 
-```http
+```http request
 POST /token
 Host: oauth2.googleapis.com
 Content-Type: application/x-www-form-urlencoded

@@ -7,10 +7,10 @@
       "strict": true,
       "preserveConstEnums": true,
       "moduleResolution": "Node",
-      "esModuleInterop": true,
       "noImplicitAny": true,
       "removeComments": true,
       "resolveJsonModule": true,
+      "sourceMap": true,
       "types": ["@cloudflare/workers-types", "@types/jest"]
    },
    "include": ["src"],

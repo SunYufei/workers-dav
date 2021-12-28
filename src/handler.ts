@@ -1,9 +1,10 @@
 import { driveType } from './drive/config.json'
 import dav from './dav/export'
 import GoogleDrive from './drive/google'
+import { HTTPCode } from './common/http'
 
-const drive = (function(driveType) {
-   // TODO support other drives, e.g. OneDrive, AliyunDrive
+const drive = ((driveType) => {
+   // TODO support other drives, e.g. OneDrive, AliYunDrive
    return new GoogleDrive()
 })(driveType)
 
@@ -22,24 +23,21 @@ export async function mkcol(path: string) {
    return dav.mkcol(await drive.mkdir(path))
 }
 
-export async function get(
-   path: string,
-   range: string | null,
-   withContent: boolean,
-) {
-   console.log('GET', path, range, withContent)
-   return new Response(path)
+export async function get(path: string, range: string | null) {
+   console.log('GET', path, range)
+   return await drive.fetchFile(path, range, true)
 }
 
 export async function head(path: string) {
    console.log('HEAD', path)
-   return new Response(path)
+   return await drive.fetchFile(path, null, false)
 }
 
 export async function propfind(path: string, depth: string) {
    console.log('PROPFIND', path, 'depth:', depth)
-   // disable infinity depth
-   if (depth == 'infinity') depth = '1'
-   const properties = await drive.getItemProperty(path, depth == '1')
-   return dav.propfind(properties)
+
+   // refuse infinity depth
+   if (depth == 'infinity')
+      return new Response(null, { status: HTTPCode.Forbidden })
+   return dav.propfind(await drive.getItemProps(path, depth == '1'))
 }

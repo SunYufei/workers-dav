@@ -1,18 +1,14 @@
 export default interface ItemProperty {
-   /**
-    * path, e.g. /folder/file.ext
-    */
-   path: string
+   /** 路径 /folder/file.ext */
+   href: string
    id: string
-   /**
-    * date format: RFC1123
-    */
+   /** 日期格式 RFC1123 */
    lastModified?: Date | string
-   /**
-    * date format: RFC3339
-    */
+   /** 日期格式 RFC3339 */
    creationDate?: Date | string
    displayName?: string
-   contentLength: number | string
-   contentType: string
+   contentLength?: number | string
+   contentType?: string
+   /** 子项目 */
+   children?: ItemProperty[]
 }

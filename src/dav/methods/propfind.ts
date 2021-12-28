@@ -1,43 +1,37 @@
+import { HTTPCode, StatusCode } from '../../common/http'
 import ItemProperty from '../../common/property'
 import XMLBuilder from '../xml'
-import { HTTPCode } from '../../common/http'
 
 function date2RFC3339(date?: Date | string): string {
-   // TODO date to RFC3339
    date = date || new Date()
-   if (date instanceof String) {
-      date = new Date(date)
-   }
-   return ''
+   if (typeof date == 'string') date = new Date(date)
+   return date.toISOString()
 }
 
 function date2RFC1123(date?: Date | string): string {
-   // TODO date to RFC1123
    date = date || new Date()
-   if (date instanceof String) {
-      date = new Date(date)
-   }
-   return ''
+   if (typeof date == 'string') date = new Date(date)
+   return date.toUTCString()
 }
 
 function buildResponse(
    property: ItemProperty,
-   status = HTTPCode.OK,
+   status: number = HTTPCode.OK
 ): XMLBuilder {
    const builder = new XMLBuilder('D:response')
-   builder.elem('D:href', property.path)
-   const propstat = builder.elem('D:propstat')
-   // TODO http.STATUS_CODES[status]
-   propstat.elem('D:status', `HTTP/1.1 ${status} OK`)
+   builder.elem('D:href', property.href)
+   const propStat = builder.elem('D:propstat')
+   propStat.elem('D:status', `HTTP/1.1 ${status} ${StatusCode[status]}`)
    const prop = builder.elem('D:prop')
    prop.elem('D:getetag', property.id)
    prop.elem('D:getlastmodified', date2RFC1123(property.lastModified))
    prop.elem('D:creationdate', date2RFC3339(property.creationDate))
-   prop.elem('D:displayname', property.displayName)
+   if (property.displayName) {
+      prop.elem('D:displayname', property.displayName)
+   }
    const resourceType = prop.elem('D:resourcetype')
-   if (property.contentType.includes('folder')) {
+   if (!property.contentType || !property.contentLength) {
       // 对于文件夹，指定其 resource type 为 collection
-      // TODO 此处仅判断 google drive folder mime type
       resourceType.elem('D:collection')
    } else {
       // 对于文件，构造其 content length 和 content type
@@ -47,15 +41,18 @@ function buildResponse(
    return builder
 }
 
-export default function propfind(properties: ItemProperty[]) {
-   const builder = new XMLBuilder('D:multistatus', { 'xmlns:D': 'DAV:' })
-   for (const item of properties) {
-      builder.add(buildResponse(item))
+export default function propfind(props: ItemProperty[] | null) {
+   if (props == null) {
+      return new Response(null, { status: HTTPCode.NotFound })
+   }
+   const builder = new XMLBuilder('D:multistatus', {
+      'xmlns:D': 'DAV:',
+   })
+   for (const prop of props) {
+      builder.add(buildResponse(prop))
    }
    return new Response(builder.build(), {
       status: HTTPCode.MultiStatus,
-      headers: {
-         'Content-Type': 'application/xml; charset=utf-8',
-      },
+      headers: { 'Content-Type': 'application/xml; charset=utf-8' },
    })
 }

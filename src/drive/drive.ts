@@ -7,7 +7,10 @@ export default interface Drive {
     * @param withChildren 是否包含子项目
     * @return 项目属性
     */
-   getItemProperty(path: string, withChildren: boolean): Promise<ItemProperty[]>
+   getItemProps(
+      path: string,
+      withChildren: boolean
+   ): Promise<ItemProperty[] | null>
 
    /**
     * 新建文件夹

@@ -1,17 +1,20 @@
-export default class PathUtil {
-   static getParts(path: string): string[] {
-      path = this.trim(path)
-      return path.split('/')
+export default class Path {
+   static resolve(path: string): string {
+      return `/${this.trim(path)}`
+   }
+
+   static parts(path: string): string[] {
+      return this.trim(path).split('/')
    }
 
    static getParent(path: string): string {
-      const parts = this.getParts(path)
+      const parts = this.parts(path)
       parts.pop()
       return `/${parts.join('/')}`
    }
 
    static getName(path: string): string {
-      const parts = this.getParts(path)
+      const parts = this.parts(path)
       return parts.pop() || ''
    }
 
@@ -24,8 +27,8 @@ export default class PathUtil {
    private static trim(path: string): string {
       // decode URI component
       path = decodeURIComponent(path)
-      // ‘ -> \'
-      path = path.replace(/'/g, '\\\'')
+      // ' -> \'
+      path = path.replace(/'/g, "\\'")
       // trim slash
       path = path.replace(/^(\s|\/)+|(\s|\/)+$/g, '')
       return path
