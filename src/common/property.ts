@@ -9,6 +9,6 @@ export default interface ItemProperty {
    displayName?: string
    contentLength?: number | string
    contentType?: string
-   /** 子项目 */
-   children?: ItemProperty[]
+   /** 子项目绝对路径 */
+   children?: string[]
 }

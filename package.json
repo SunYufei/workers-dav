@@ -34,6 +34,7 @@
       "format": "prettier --write  '*.{json,js}' 'src/**/*.{json,js,ts}' 'test/**/*.{js,ts}'",
       "dev": "miniflare dist/worker.js --watch",
       "publish": "wrangler publish",
+      "preview": "wrangler preview --watch",
       "test": "jest"
    },
    "version": "0.1.0"

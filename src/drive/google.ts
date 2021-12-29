@@ -23,34 +23,43 @@ type RespJson = Record<string, any>
 export default class GoogleDrive implements Drive {
    // access token
    private accessToken: string | null = null
-   private expires = 0
+   private expires: number = 0
 
-   /** property cache: { abs path: property } */
-   private propCache: Record<string, ItemProperty> = {
-      '/': { href: '/', id: root },
+   /** 缓存: { 绝对路径: ItemProperty } */
+   private readonly cache: Record<string, ItemProperty> = {
+      '/': { href: '/', id: root, children: [] },
    }
-   /** list cache: { parent: children[] } */
-   private listCache: Record<string, string[]> = {}
 
    /**
-    * get or update item property from:
-    * 1. local memory
-    * 2. TODO KV
-    * 3. using files:list api
-    * @param path
-    * @param withChildren
+    * 以下面的顺序获取项目属性
+    * 1. 内存
+    * 2. KV
+    * 3. 使用 files:list API
     */
-   async getItemProps(path: string, withChildren = false) {
+   async getItemProps(path: string, withChildren: boolean = false) {
       const LOG_MSG = 'getItemProps'
       console.log(LOG_MSG, path, 'withChildren:', withChildren)
 
-      let current = '/'
-      let id = this.propCache[current].id
-      for (const name of Path.parts(
-         withChildren ? Path.join(path, '.') : path
-      )) {
-         const next = Path.join(current, name)
-         if (!this.propCache[next]) {
+      // 从根目录开始获取目录属性
+      let parent = '/'
+      let id = this.cache[parent].id
+      const parts = Path.parts(path)
+      if (withChildren) parts.push('.')
+      for (const name of parts) {
+         const next = Path.join(parent, name)
+         if (!this.cache[next]) {
+            console.log(LOG_MSG, '本地缓存不存在', next)
+            // 检查 KV 缓存
+            const kvCache = await KV.get(next, { type: 'json' })
+            if (kvCache) {
+               this.cache[next] = kvCache as ItemProperty
+               id = this.cache[next].id
+               parent = next
+               console.log(LOG_MSG, '使用KV缓存', next)
+               continue
+            }
+            // 使用 files:list API 获取
+            console.log(LOG_MSG, 'KV缓存不存在', next)
             const params = {
                'supportsAllDrives': 'true',
                'includeItemsFromAllDrives': 'true',
@@ -66,33 +75,59 @@ export default class GoogleDrive implements Drive {
             if (response.status != HTTPCode.OK) break
             const data = await response.json<RespJson>()
             if (!data['files'] || data['files'].length == 0) break
-            this.listCache[current] = []
+
+            // 检查是否需要更新父目录 children 字段
+            let freshParent = false
+            if (this.cache[parent].children?.length != data['files'].length) {
+               this.cache[parent].children = []
+               freshParent = true
+            }
+
+            // 解析存储文件属性
             for (const file of data['files']) {
-               const item = Path.join(current, file['name'])
-               this.listCache[current].push(item)
-               this.propCache[item] = {
-                  href: item,
-                  id: file['id'],
-                  contentLength: file['size'],
-                  contentType: file['mimeType'],
-                  lastModified: file['modifiedTime'],
-                  creationDate: file['createdTime'],
+               const item = Path.join(parent, file['name'])
+               if (freshParent) this.cache[parent].children?.push(item)
+               if (!this.cache[item]) {
+                  this.cache[item] = {
+                     href: item,
+                     id: file['id'],
+                     contentLength: file['size'],
+                     contentType: file['mimeType'],
+                     lastModified: file['modifiedTime'],
+                     creationDate: file['createdTime'],
+                  }
+                  if (this.cache[item].contentType == GOOGLE_FOLDER) {
+                     delete this.cache[item].contentType
+                     this.cache[item].children = []
+                  }
+                  // 写入 KV
+                  console.log(LOG_MSG, '写入KV', item)
+                  await KV.put(item, JSON.stringify(this.cache[item]))
                }
             }
+
+            // 存在目录结构变化，更新缓存
+            if (freshParent) {
+               await KV.put(parent, JSON.stringify(this.cache[parent]))
+               console.log(LOG_MSG, '更新KV', parent)
+            }
          }
-         if (!this.propCache[next]) break
-         id = this.propCache[next].id
-         current = next
+
+         // 更新变量，准备下一轮循环
+         if (!this.cache[next]) break
+         id = this.cache[next].id
+         parent = next
       }
 
-      const props = []
-      if (this.propCache[path]) props.push(this.propCache[path])
-      if (withChildren && this.listCache[path])
-         for (const child of this.listCache[path])
-            props.push(this.propCache[child])
+      if (!this.cache[path]) return null
 
-      console.log(LOG_MSG, `find ${props.length} items`)
-      return props[0] ? props : null
+      const props = [this.cache[path]]
+      if (withChildren && this.cache[path].children)
+         for (const child of this.cache[path].children as string[])
+            props.push(this.cache[child])
+
+      console.log(LOG_MSG, `获取到 ${props.length} 个项目`)
+      return props
    }
 
    async fetchFile(path: string, range: string | null, withContent: boolean) {
@@ -111,24 +146,21 @@ export default class GoogleDrive implements Drive {
          })
       }
 
-      console.log(LOG_MSG, path, 'not found')
+      console.log(LOG_MSG, '文件未找到', path)
       return new Response(null, {
          status: HTTPCode.NotFound,
       })
    }
 
-   /**
-    * mkdir using files:create api
-    * @param path
-    */
+   /** 使用 files:create API 新建文件夹 */
    async mkdir(path: string) {
       if ((await this.getItemProps(path)) == null) {
          let parent = '/'
-         let id = this.propCache[parent].id
+         let id = this.cache[parent].id
          for (let name of Path.parts(path)) {
             name = decodeURIComponent(name)
             const next = `${parent}/${name}`
-            if (this.propCache[next] == undefined) {
+            if (this.cache[next] == undefined) {
                const response = await fetch(FILES_URI, {
                   method: 'POST',
                   headers: await this.getAuthHeaders(),
@@ -138,21 +170,18 @@ export default class GoogleDrive implements Drive {
                      'parents': [id],
                   }),
                })
+               if (response.status != HTTPCode.OK) break
                // TODO handle response
             }
             // get next part of path
-            id = this.propCache[next].id
+            id = this.cache[next].id
             parent = next
          }
       }
       return false
    }
 
-   /**
-    * delete file/path using files:delete api
-    * @param path
-    * @returns
-    */
+   /** 使用 files:delete API 删除文件/文件夹 */
    async trash(path: string) {
       const LOG_MSG = 'trash'
       console.log(LOG_MSG, path)
@@ -163,6 +192,7 @@ export default class GoogleDrive implements Drive {
          return false
       }
       for (const prop of props) {
+         // TODO props[0] 删除父目录内容
          const url = `${FILES_URI}/${prop.id}?supportsAllDrives=true`
          const response = await fetch(url, {
             method: 'DELETE',
@@ -173,18 +203,9 @@ export default class GoogleDrive implements Drive {
             response.headers.get('Content-Length') == '0'
          ) {
             // delete info in propCache
-            delete this.propCache[prop.href]
-            console.log(LOG_MSG, prop.href, 'deleted in propCache')
-            // delete info in listCache
-            const parent = Path.getParent(prop.href)
-            if (this.listCache[parent] != undefined) {
-               delete this.listCache[parent]
-               console.log(
-                  LOG_MSG,
-                  prop.href,
-                  `parent ${parent} deleted in listCache`
-               )
-            }
+            delete this.cache[prop.href]
+            await KV.delete(prop.href)
+            console.log(LOG_MSG, '删除本地和KV存储', prop.href)
          }
       }
       return true
@@ -198,8 +219,8 @@ export default class GoogleDrive implements Drive {
    }
 
    /**
-    * get or update access token from:
-    * 1. local memory
+    * 以下面的顺序获取/更新 Access Token
+    * 1. 内存
     * 2. KV
     * 3. OAuth API
     * @private
@@ -209,13 +230,17 @@ export default class GoogleDrive implements Drive {
       const KV_TOKEN_KEY = 'gd_token'
       const KV_EXPIRES_KEY = 'gd_expires'
 
+      const that = this
       if (!this.accessToken || this.expires < Date.now()) {
-         console.log(LOG_MSG, 'local token outdated')
-         // check KV
-         this.accessToken = await KV.get(KV_TOKEN_KEY)
-         if (!this.accessToken) {
-            console.log(LOG_MSG, 'KV token outdated')
-            // get access token using API
+         if (!that.accessToken) console.log(LOG_MSG, '本地token不存在')
+         if (that.expires < Date.now()) console.log(LOG_MSG, '本地token过期')
+
+         // 检查 KV
+         that.accessToken = await KV.get(KV_TOKEN_KEY)
+         that.expires = Number(await KV.get(KV_EXPIRES_KEY))
+         if (!that.accessToken) {
+            console.log(LOG_MSG, 'KV缓存过期')
+            // 使用 API 获取
             const response = await fetch(OAUTH_URI, {
                method: 'POST',
                headers: {
@@ -229,18 +254,19 @@ export default class GoogleDrive implements Drive {
                }),
             })
             const data = await response.json<RespJson>()
-            // update access token
+            // 更新 access token
             const token = data['access_token']
-            if (token != undefined) {
+            if (token) {
                const expiresIn = data['expires_in'] - 1
-               // save to class
-               this.accessToken = token
-               this.expires = Date.now() + expiresIn * 1000
-               // save to KV
+               // 存入内存
+               that.accessToken = token
+               that.expires = Date.now() + expiresIn * 1000
+               // 存到 KV
                await KV.put(KV_TOKEN_KEY, token, {
                   expirationTtl: expiresIn,
                })
-               await KV.put(KV_EXPIRES_KEY, this.expires.toString())
+               await KV.put(KV_EXPIRES_KEY, that.expires.toString())
+               console.log(LOG_MSG, 'access token & expires写入KV')
             }
          }
       }
