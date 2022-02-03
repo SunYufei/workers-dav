@@ -22,7 +22,7 @@ function buildResponse(
    builder.elem('D:href', property.href)
    const propStat = builder.elem('D:propstat')
    propStat.elem('D:status', `HTTP/1.1 ${status} ${StatusCode[status]}`)
-   const prop = builder.elem('D:prop')
+   const prop = propStat.elem('D:prop')
    prop.elem('D:getetag', property.id)
    prop.elem('D:getlastmodified', date2RFC1123(property.lastModified))
    prop.elem('D:creationdate', date2RFC3339(property.creationDate))
