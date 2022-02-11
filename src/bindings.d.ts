@@ -1,5 +1,2 @@
-export {}
-
-declare global {
-   const KV: KVNamespace
-}
+declare const KV: KVNamespace
+declare type StrAny = Record<string, any>

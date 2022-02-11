@@ -18,12 +18,9 @@ const OAUTH_URI = 'https://www.googleapis.com/oauth2/v4/token'
 // Google Drive 特定文件夹 MIME Type
 const GOOGLE_FOLDER = 'application/vnd.google-apps.folder'
 
-type RespJson = Record<string, any>
-
 export default class GoogleDrive implements Drive {
    // access token
    private accessToken: string | null = null
-   private expires: number = 0
 
    /** 缓存: { 绝对路径: ItemProperty } */
    private readonly cache: Record<string, ItemProperty> = {
@@ -35,6 +32,7 @@ export default class GoogleDrive implements Drive {
     * 1. 内存
     * 2. KV
     * 3. 使用 files:list API
+    * @returns [pathProp, ...childrenProps]
     */
    async getItemProps(path: string, withChildren: boolean = false) {
       const LOG_MSG = 'getItemProps'
@@ -73,7 +71,7 @@ export default class GoogleDrive implements Drive {
                headers: await this.getAuthHeaders(),
             })
             if (response.status != HTTPCode.OK) break
-            const data = await response.json<RespJson>()
+            const data = await response.json<StrAny>()
             if (!data['files'] || data['files'].length == 0) break
 
             // 检查是否需要更新父目录 children 字段
@@ -146,7 +144,7 @@ export default class GoogleDrive implements Drive {
          })
       }
 
-      console.log(LOG_MSG, '文件未找到', path)
+      console.error(LOG_MSG, '文件未找到', path)
       return new Response(null, {
          status: HTTPCode.NotFound,
       })
@@ -154,31 +152,56 @@ export default class GoogleDrive implements Drive {
 
    /** 使用 files:create API 新建文件夹 */
    async mkdir(path: string) {
-      if ((await this.getItemProps(path)) == null) {
-         let parent = '/'
-         let id = this.cache[parent].id
-         for (let name of Path.parts(path)) {
-            name = decodeURIComponent(name)
-            const next = `${parent}/${name}`
-            if (this.cache[next] == undefined) {
-               const response = await fetch(FILES_URI, {
-                  method: 'POST',
-                  headers: await this.getAuthHeaders(),
-                  body: JSON.stringify({
-                     'name': name.replace(/'/g, "\\'"),
-                     'mimeType': GOOGLE_FOLDER,
-                     'parents': [id],
-                  }),
-               })
-               if (response.status != HTTPCode.OK) break
-               // TODO handle response
-            }
-            // get next part of path
-            id = this.cache[next].id
-            parent = next
-         }
+      const LOG_MSG = 'mkdir'
+      console.log(LOG_MSG, path)
+
+      // 文件夹存在则忽略
+      const prop = await this.getItemProps(path, false)
+      if (prop) {
+         console.log(LOG_MSG, '文件夹已存在', path)
+         return true
       }
-      return false
+
+      // 判断父文件夹是否存在
+      const parent = Path.getParent(path)
+      const props = await this.getItemProps(parent, false)
+      if (!props) {
+         console.error(LOG_MSG, '父文件夹不存在', path)
+         return false
+      }
+
+      // 使用 files:create API 创建文件夹
+      console.log(LOG_MSG, '使用 API 新建文件夹', path)
+      const resp = await fetch(FILES_URI, {
+         method: 'POST',
+         headers: await this.getAuthHeaders(),
+         body: JSON.stringify({
+            'name': Path.getName(path),
+            'mimeType': GOOGLE_FOLDER,
+            'parents': [props[0].id],
+         }),
+      })
+      if (resp.status != HTTPCode.OK) {
+         console.error(LOG_MSG, 'API请求失败', path)
+         return false
+      }
+      const data = await resp.json<StrAny>()
+      if (!data || !data.id) {
+         console.error(LOG_MSG, '文件夹新建失败', path)
+         return false
+      }
+      // 写入内存
+      this.cache[path] = {
+         href: path,
+         id: data.id,
+         children: [],
+      }
+      this.cache[parent].children?.push(path)
+      // 写入 KV
+      await KV.put(parent, JSON.stringify(this.cache[parent]))
+      await KV.put(path, JSON.stringify(this.cache[path]))
+
+      return true
    }
 
    /** 使用 files:delete API 删除文件/文件夹 */
@@ -188,24 +211,33 @@ export default class GoogleDrive implements Drive {
 
       const props = await this.getItemProps(path, true)
       if (props == null) {
-         console.log(LOG_MSG, path, 'not found')
+         console.error(LOG_MSG, '文件/文件夹不存在', path)
          return false
       }
+
+      // 清除父目录中的部分信息
+      const parent = Path.getParent(path)
+      this.cache[parent].children = []
+      await KV.delete(parent)
+
+      // 删除目录及其文件
       for (const prop of props) {
-         // TODO props[0] 删除父目录内容
          const url = `${FILES_URI}/${prop.id}?supportsAllDrives=true`
-         const response = await fetch(url, {
+         const resp = await fetch(url, {
             method: 'DELETE',
             headers: await this.getAuthHeaders(),
          })
          if (
-            response.status == HTTPCode.OK &&
-            response.headers.get('Content-Length') == '0'
+            resp.status == HTTPCode.OK &&
+            resp.headers.get('Content-Length') == '0'
          ) {
-            // delete info in propCache
+            // 删除缓存信息
             delete this.cache[prop.href]
             await KV.delete(prop.href)
             console.log(LOG_MSG, '删除本地和KV存储', prop.href)
+         } else {
+            console.error(LOG_MSG, '删除文件/文件夹失败', prop.href)
+            return false
          }
       }
       return true
@@ -228,20 +260,17 @@ export default class GoogleDrive implements Drive {
    private async getAccessToken(): Promise<string | null> {
       const LOG_MSG = 'getAccessToken'
       const KV_TOKEN_KEY = 'gd_token'
-      const KV_EXPIRES_KEY = 'gd_expires'
 
       const that = this
-      if (!this.accessToken || this.expires < Date.now()) {
-         if (!that.accessToken) console.log(LOG_MSG, '本地token不存在')
-         if (that.expires < Date.now()) console.log(LOG_MSG, '本地token过期')
+      if (!this.accessToken) {
+         console.log(LOG_MSG, '本地token不存在')
 
          // 检查 KV
          that.accessToken = await KV.get(KV_TOKEN_KEY)
-         that.expires = Number(await KV.get(KV_EXPIRES_KEY))
          if (!that.accessToken) {
             console.log(LOG_MSG, 'KV缓存过期')
             // 使用 API 获取
-            const response = await fetch(OAUTH_URI, {
+            const resp = await fetch(OAUTH_URI, {
                method: 'POST',
                headers: {
                   'Content-Type': 'application/x-www-form-urlencoded',
@@ -253,20 +282,19 @@ export default class GoogleDrive implements Drive {
                   grant_type: grantType,
                }),
             })
-            const data = await response.json<RespJson>()
+            const data = await resp.json<StrAny>()
             // 更新 access token
             const token = data['access_token']
             if (token) {
-               const expiresIn = data['expires_in'] - 1
                // 存入内存
                that.accessToken = token
-               that.expires = Date.now() + expiresIn * 1000
                // 存到 KV
                await KV.put(KV_TOKEN_KEY, token, {
-                  expirationTtl: expiresIn,
+                  expirationTtl: data['expires_in'] - 1,
                })
-               await KV.put(KV_EXPIRES_KEY, that.expires.toString())
-               console.log(LOG_MSG, 'access token & expires写入KV')
+               console.log(LOG_MSG, 'access token 写入 KV')
+            } else {
+               console.error(LOG_MSG, 'access token 请求失败')
             }
          }
       }

@@ -10,11 +10,11 @@ await NAMESPACE.put(key, value, {
 })
 ```
 
-- key: string
+- key: `string`
    - 最大大小 512B
    - 不允许为空、`.`和`..`
    - 重复 key 会更新 `value`
-- value: string | ReadableStream | ArrayBuffer
+- value: `string | ReadableStream | ArrayBuffer`
    - 最大大小为 25MB
 - expirationTtl: number
 
@@ -30,6 +30,8 @@ await NAMESPACE.get(key, { type: 'text' })
 - json，json 解析后的 value
 - arrayBuffer
 - stream
+
+若未找到 value 则返回 `null`
 
 ### 删除 KV
 

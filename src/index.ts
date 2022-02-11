@@ -17,10 +17,10 @@ async function handleRequest(request: Request) {
       status: HTTPCode.MethodNotAllowed,
    })
    if (method == 'OPTIONS') response = options()
-   // if (method == 'DELETE') response = await trash(path)
+   if (method == 'DELETE') response = await trash(path)
    if (method == 'GET') response = await get(path, headers.get('Range'))
    // if (method == 'HEAD') response = await head(path)
-   // if (method == 'MKCOL') response = await mkcol(path)
+   if (method == 'MKCOL') response = await mkcol(path)
    if (method == 'PROPFIND')
       response = await propfind(path, headers.get('Depth') || '0')
    // CORS config
