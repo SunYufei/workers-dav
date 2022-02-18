@@ -5,11 +5,9 @@ import {
    refreshToken,
    root,
 } from './config.json'
-import encodeQuery from './query'
 import Drive from './drive'
-import { HTTPCode } from '../common/http'
-import ItemProperty from '../common/property'
-import Path from '../common/path'
+import { encodeQuery, HTTPCode } from '../utils/http'
+import Path from '../utils/path'
 
 // URIs
 const FILES_URI = 'https://www.googleapis.com/drive/v3/files'
@@ -201,6 +199,10 @@ export default class GoogleDrive implements Drive {
       await KV.put(parent, JSON.stringify(this.cache[parent]))
       await KV.put(path, JSON.stringify(this.cache[path]))
 
+      return true
+   }
+
+   async move(src: string, dst: string) {
       return true
    }
 

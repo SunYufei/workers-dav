@@ -1,4 +1,4 @@
-import { HTTPCode } from '../../common/http'
+import { HTTPCode } from '../../utils/http'
 
 export default function trash(success: boolean) {
    return new Response(null, {

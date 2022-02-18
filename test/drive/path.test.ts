@@ -1,4 +1,4 @@
-import Path from '../../src/common/path'
+import Path from '../../src/utils/path'
 
 test('Path.base', () => {
    ;[

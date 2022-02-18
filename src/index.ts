@@ -1,6 +1,6 @@
-import { get, head, mkcol, options, propfind, trash } from './handler'
-import { HTTPCode } from './common/http'
-import Path from './common/path'
+import { get, head, mkcol, move, options, propfind, trash } from './handler'
+import { HTTPCode } from './utils/http'
+import Path from './utils/path'
 
 addEventListener('fetch', (event) => {
    event.respondWith(handleRequest(event.request))
@@ -21,6 +21,8 @@ async function handleRequest(request: Request) {
    if (method == 'GET') response = await get(path, headers.get('Range'))
    // if (method == 'HEAD') response = await head(path)
    if (method == 'MKCOL') response = await mkcol(path)
+   if (method == 'MOVE')
+      response = await move(path, headers.get('Destination') || '/')
    if (method == 'PROPFIND')
       response = await propfind(path, headers.get('Depth') || '0')
    // CORS config

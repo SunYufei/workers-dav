@@ -59,5 +59,13 @@ export enum HTTPCode {
 
 export const StatusCode: Record<number, string> = {
    200: 'OK',
-   207: 'Multi-Status'
+   207: 'Multi-Status',
+}
+
+export function encodeQuery(data: Record<string, string>): string {
+   return Object.keys(data)
+      .map((key) => {
+         return `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`
+      })
+      .join('&')
 }

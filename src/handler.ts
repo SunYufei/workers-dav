@@ -1,9 +1,9 @@
 import { driveType } from './drive/config.json'
 import dav from './dav/export'
 import GoogleDrive from './drive/google'
-import { HTTPCode } from './common/http'
+import { HTTPCode } from './utils/http'
 
-const drive = ((driveType) => {
+const drive = ((driveType: string) => {
    // TODO support other drives, e.g. OneDrive, AliYunDrive
    return new GoogleDrive()
 })(driveType)
@@ -21,6 +21,11 @@ export async function trash(path: string) {
 export async function mkcol(path: string) {
    console.log('MKCOL', path)
    return dav.mkcol(await drive.mkdir(path))
+}
+
+export async function move(src: string, dst: string) {
+   console.log('MOVE', src, dst)
+   return dav.move(await drive.move(src, dst))
 }
 
 export async function get(path: string, range: string | null) {

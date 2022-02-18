@@ -1,5 +1,4 @@
-import { HTTPCode, StatusCode } from '../../common/http'
-import ItemProperty from '../../common/property'
+import { HTTPCode, StatusCode } from '../../utils/http'
 import XMLBuilder from '../xml'
 
 function date2RFC3339(date?: Date | string): string {

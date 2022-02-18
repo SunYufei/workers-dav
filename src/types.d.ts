@@ -1,4 +1,8 @@
-export default interface ItemProperty {
+declare const KV: KVNamespace
+
+declare type StrAny = Record<string, any>
+
+declare type ItemProperty = {
    /** 路径 /folder/file.ext */
    href: string
    id: string

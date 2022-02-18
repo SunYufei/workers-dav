@@ -1,5 +1,3 @@
-import ItemProperty from '../common/property'
-
 export default interface Drive {
    /**
     * 获取指定路径项目属性
@@ -18,6 +16,14 @@ export default interface Drive {
     * @return 新建文件夹是否成功
     */
    mkdir(path: string): Promise<boolean>
+
+   /**
+    * 移动文件/文件夹
+    * @param src 源路径
+    * @param dst 目标路径
+    * @return 移动是否成功
+    */
+   move(src: string, dst: string): Promise<boolean>
 
    /**
     * 删除文件/文件夹
