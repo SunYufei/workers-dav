@@ -1,6 +1,6 @@
 # 模块调用关系
 
-|             WebDAV 请求方法<br>index.ts             | 请求处理函数<br>handler.ts | DAV 调用<br>dav/ | Drive 调用<br>drive/ |
+|             WebDAV 请求方法<br>dav.ts             | 请求处理函数<br>handler.ts | DAV 调用<br>dav/ | Drive 调用<br>drive/ |
 |:-----------------------------------------------:| :---: | :---: | :---: |
 |     [OPTIONS](WebDAV.md#OPTIONS)<br>获取支持方法      | options() | options() | / | 
 | [PROPFIND](WebDAV.md#PROPFIND)<br>获取资源属性/目录层次结构 | propfind(path, depth) | propfind(properties) | getItemProperties(path, withChildren) |

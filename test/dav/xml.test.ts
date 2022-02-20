@@ -1,4 +1,4 @@
-import XMLBuilder from '../../src/dav/xml'
+import XMLBuilder from '../../src/utils/xml'
 
 test('xml', () => {
    const builder = new XMLBuilder('D:multistatus', {

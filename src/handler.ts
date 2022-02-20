@@ -1,8 +1,9 @@
-import { driveType } from './drive/config.json'
-import dav from './dav/export'
+import DAV from './dav'
 import GoogleDrive from './drive/google'
+import { driveType } from './drive/config.json'
 import { HTTPCode } from './utils/http'
 
+const dav = new DAV()
 const drive = ((driveType: string) => {
    // TODO support other drives, e.g. OneDrive, AliYunDrive
    return new GoogleDrive()
