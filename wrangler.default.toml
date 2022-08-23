@@ -1,14 +1,8 @@
 name = "workers-dav"
-type = "webpack"
 workers_dev = true
-compatibility_date = "2021-12-19"
-webpack_config = "webpack.config.js"
+main = "src/index.ts"
+compatibility_date = "2022-08-23"
 
 kv_namespaces = [
     { binding = "KV", id = "" }
 ]
-
-[build]
-command = "webpack"
-[build.upload]
-format = "service-worker"
