@@ -1,8 +1,6 @@
 name = "workers-dav"
 workers_dev = true
 main = "src/index.ts"
-compatibility_date = "2022-08-23"
+compatibility_date = "2023-10-13"
 
-kv_namespaces = [
-    { binding = "KV", id = "" }
-]
+kv_namespaces = [{ binding = "KV", id = "" }]

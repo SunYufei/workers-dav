@@ -1,11 +1,7 @@
 export default class Path {
-   static resolve(path: string): string {
-      return `/${this.trim(path)}`
-   }
+   static resolve = (path: string) => `/${this.trim(path)}`
 
-   static parts(path: string): string[] {
-      return this.trim(path).split('/')
-   }
+   static parts = (path: string) => this.trim(path).split('/')
 
    static getParent(path: string): string {
       const parts = this.parts(path)
@@ -13,10 +9,7 @@ export default class Path {
       return `/${parts.join('/')}`
    }
 
-   static getName(path: string): string {
-      const parts = this.parts(path)
-      return parts.pop() || ''
-   }
+   static getName = (path: string) => this.parts(path).pop() || ''
 
    static join(parent: string, name: string): string {
       parent = this.trim(parent)

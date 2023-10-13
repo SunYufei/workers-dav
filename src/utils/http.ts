@@ -62,10 +62,9 @@ export const StatusCode: Record<number, string> = {
    207: 'Multi-Status',
 }
 
-export function encodeQuery(data: Record<string, string>): string {
-   return Object.keys(data)
-      .map((key) => {
-         return `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`
-      })
+export const encodeQuery = (data: Record<string, string>) =>
+   Object.keys(data)
+      .map(
+         (key) => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`
+      )
       .join('&')
-}
