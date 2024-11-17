@@ -1,6 +1,10 @@
 name = "workers-dav"
-workers_dev = true
-main = "src/index.ts"
-compatibility_date = "2023-10-13"
 
 kv_namespaces = [{ binding = "KV", id = "" }]
+
+[vars]
+CLIENT_ID = ""
+CLIENT_SECRET = ""
+REFRESH_TOKEN = ""
+ROOT = "root"
+GRANT_TYPE = "refresh_token"

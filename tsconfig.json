@@ -1,18 +1,15 @@
 {
    "compilerOptions": {
-      "module": "ES2022",
-      "target": "ES2022",
-      "lib": ["ES2022"],
-      "strict": true,
-      "preserveConstEnums": true,
+      "module": "ESNext",
+      "target": "ESNext",
+      "lib": ["ESNext"],
       "moduleResolution": "Node",
-      "noImplicitAny": true,
-      "removeComments": true,
+      "esModuleInterop": true,
+      "noEmit": true,
+      "strict": true,
       "resolveJsonModule": true,
-      "sourceMap": true,
-      "typeRoots": ["node_modules"],
-      "types": ["@cloudflare/workers-types"]
+      "types": ["@cloudflare/workers-types"],
+      "baseUrl": "./"
    },
-   "include": ["src/**/*.ts"],
-   "exclude": ["node_modules", "test", "dist", "worker"]
+   "exclude": ["node_modules"]
 }
